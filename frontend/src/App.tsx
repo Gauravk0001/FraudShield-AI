@@ -15,6 +15,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 import { InvestigationWorkspace } from './pages/Investigation';
+import { CopilotPage } from './pages/Copilot';
+
 
 export const App: React.FC = () => {
   return (
@@ -34,12 +36,13 @@ export const App: React.FC = () => {
           <Route path="transactions" element={<Transactions />} />
           <Route path="alerts" element={<Transactions />} />
           <Route path="investigations" element={<InvestigationWorkspace />} />
-          <Route path="copilot" element={<div className="p-4 text-slate-700">AI Copilot Workspace</div>} />
+          <Route path="copilot" element={<CopilotPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
     </BrowserRouter>
   );
 };
+
 
 export default App;

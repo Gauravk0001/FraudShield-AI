@@ -51,27 +51,36 @@ def extract_features(
     twenty_four_hours_ago = tx_timestamp - timedelta(hours=24)
     thirty_days_ago = tx_timestamp - timedelta(days=30)
 
-    # 1. Transaction velocities
+    # 1. Transaction velocities (strictly prior to current transaction)
     velocity_1h = db.query(func.count(Transaction.id)).filter(
         Transaction.customer_id == customer_id,
         Transaction.timestamp >= one_hour_ago,
-        Transaction.timestamp <= tx_timestamp
+        Transaction.timestamp < tx_timestamp
     ).scalar() or 0
 
     velocity_24h = db.query(func.count(Transaction.id)).filter(
         Transaction.customer_id == customer_id,
         Transaction.timestamp >= twenty_four_hours_ago,
-        Transaction.timestamp <= tx_timestamp
+        Transaction.timestamp < tx_timestamp
     ).scalar() or 0
 
-    # 2. Avg amount last 30d
+    # 2. Avg amount last 30d (historical baseline)
     avg_30d = db.query(func.avg(Transaction.amount)).filter(
         Transaction.customer_id == customer_id,
         Transaction.timestamp >= thirty_days_ago,
-        Transaction.timestamp <= tx_timestamp
-    ).scalar() or amount
+        Transaction.timestamp < tx_timestamp
+    ).scalar()
 
-    amount_dev_ratio = amount / (avg_30d + 1.0)
+    if avg_30d is None:
+        # Check all-time historical average before this transaction
+        avg_30d = db.query(func.avg(Transaction.amount)).filter(
+            Transaction.customer_id == customer_id,
+            Transaction.timestamp < tx_timestamp
+        ).scalar()
+
+    # If new customer with no prior transactions, use cohort benchmark baseline (75.0)
+    baseline_avg = float(avg_30d) if avg_30d is not None else 75.0
+    amount_dev_ratio = amount / (baseline_avg + 1.0)
 
     # 3. Time since last transaction
     last_tx = db.query(Transaction).filter(
@@ -84,21 +93,23 @@ def extract_features(
         if last_time.tzinfo is None:
             last_time = last_time.replace(tzinfo=timezone.utc)
         curr_time = tx_timestamp if tx_timestamp.tzinfo else tx_timestamp.replace(tzinfo=timezone.utc)
-        time_diff = (curr_time - last_time).total_seconds()
+        time_diff = max(1.0, (curr_time - last_time).total_seconds())
         location_changed = 1.0 if (last_tx.location and last_tx.location != location) else 0.0
     else:
         time_diff = 86400.0 # 24 hours default
         location_changed = 0.0
 
-    # 4. Device and Merchant novelty
+    # 4. Device and Merchant novelty (prior transactions)
     device_seen = db.query(Transaction).filter(
         Transaction.customer_id == customer_id,
-        Transaction.device_id == device_id
+        Transaction.device_id == device_id,
+        Transaction.timestamp < tx_timestamp
     ).first() is not None
 
     merchant_seen = db.query(Transaction).filter(
         Transaction.customer_id == customer_id,
-        Transaction.merchant_id == merchant_id
+        Transaction.merchant_id == merchant_id,
+        Transaction.timestamp < tx_timestamp
     ).first() is not None
 
     features = {
@@ -108,7 +119,7 @@ def extract_features(
         "day_of_week": float(tx_timestamp.weekday()),
         "transaction_velocity_1h": float(velocity_1h),
         "transaction_velocity_24h": float(velocity_24h),
-        "avg_amount_customer_30d": float(avg_30d),
+        "avg_amount_customer_30d": float(baseline_avg),
         "amount_deviation_ratio": float(amount_dev_ratio),
         "time_since_last_transaction_seconds": float(time_diff),
         "is_new_device": 0.0 if device_seen else 1.0,

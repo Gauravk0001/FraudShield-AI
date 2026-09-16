@@ -14,27 +14,37 @@ def calculate_risk_score(
     # Behavioral signal detection
     if features_dict.get("is_new_device", 0) > 0:
         behavioral_flags["new_device"] = True
-        behavioral_boost += 0.35
+        behavioral_boost += 0.30
     
     if features_dict.get("is_new_merchant", 0) > 0:
         behavioral_flags["new_merchant"] = True
+        behavioral_boost += 0.20
+
+    if features_dict.get("location_changed", 0) > 0:
+        behavioral_flags["foreign_location"] = True
         behavioral_boost += 0.25
 
     if features_dict.get("transaction_velocity_1h", 0) >= 3:
         behavioral_flags["high_velocity_1h"] = True
         behavioral_boost += 0.35
 
-    if features_dict.get("amount_deviation_ratio", 1.0) >= 3.0 or features_dict.get("amount", 0) >= 5000.0:
-        behavioral_flags["high_amount_deviation"] = True
+    dev_ratio = features_dict.get("amount_deviation_ratio", 1.0)
+    amt = features_dict.get("amount", 0)
+
+    if dev_ratio >= 8.0 or amt >= 7500.0:
+        behavioral_flags["extreme_amount_deviation"] = True
         behavioral_boost += 0.50
+    elif dev_ratio >= 3.0 or amt >= 3000.0:
+        behavioral_flags["high_amount_deviation"] = True
+        behavioral_boost += 0.30
 
-    # Deterministic risk calculation: Fraud model 40%, Anomaly 20%, Behavioral signals 40%
-    raw_risk = (fraud_probability * 40.0) + (anomaly_score * 20.0) + (min(behavioral_boost, 1.0) * 40.0)
-
+    # Deterministic risk calculation: Supervised Fraud Model 45%, Anomaly Detector 20%, Behavioral Signals 35%
+    raw_risk = (fraud_probability * 45.0) + (anomaly_score * 20.0) + (min(behavioral_boost, 1.0) * 35.0)
 
     risk_score = round(float(min(100.0, max(0.0, raw_risk))), 2)
 
     # Determine risk level based on configurable thresholds
+    # ALERT_THRESHOLD >= 30.0 triggers automatic alert creation
     if risk_score >= 90.0:
         risk_level = RiskLevel.CRITICAL
     elif risk_score >= settings.RISK_THRESHOLD_HIGH:

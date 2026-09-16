@@ -15,7 +15,7 @@
     "is_new_merchant",
     "location_changed"
   ],
-  "training_timestamp": "2026-09-16T07:59:43.087978+00:00",
+  "training_timestamp": "2026-09-16T08:12:38.777711+00:00",
   "metrics": {
     "accuracy": 1.0,
     "precision": 1.0,
@@ -30,8 +30,8 @@
       "FN": 0,
       "TP": 100
     },
-    "mean_latency_ms": 9.321520800014696,
-    "train_time_ms": 131.4542293548584
+    "mean_latency_ms": 8.502890400002798,
+    "train_time_ms": 134.86361503601074
   },
   "dataset": "Synthetic Financial Fraud Dataset (10,000 samples, 5.0% imbalance)"
 }

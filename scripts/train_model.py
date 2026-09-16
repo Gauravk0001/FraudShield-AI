@@ -56,24 +56,71 @@ def generate_synthetic_fraud_dataset(n_samples=5000):
     df_normal = pd.DataFrame(normal_data)
     df_normal["amount_deviation_ratio"] = df_normal["amount"] / (df_normal["avg_amount_customer_30d"] + 1.0)
 
-    # Fraudulent transactions (high velocity, high amount, new device, late hours)
-    fraud_data = {
-        "amount": np.random.exponential(scale=450.0, size=n_fraud) + 200.0,
-        "transaction_type_encoded": np.random.choice([0, 1, 2], size=n_fraud, p=[0.3, 0.5, 0.2]),
-        "hour_of_day": np.random.choice([1, 2, 3, 4, 23], size=n_fraud),
-        "day_of_week": np.random.randint(0, 7, size=n_fraud),
-        "transaction_velocity_1h": np.random.poisson(lam=4.0, size=n_fraud) + 2,
-        "transaction_velocity_24h": np.random.poisson(lam=12.0, size=n_fraud) + 5,
-        "avg_amount_customer_30d": np.random.exponential(scale=40.0, size=n_fraud) + 5.0,
-        "time_since_last_transaction_seconds": np.random.exponential(scale=60.0, size=n_fraud) + 5,
-        "is_new_device": np.random.choice([0, 1], size=n_fraud, p=[0.20, 0.80]),
-        "is_new_merchant": np.random.choice([0, 1], size=n_fraud, p=[0.25, 0.75]),
-        "location_changed": np.random.choice([0, 1], size=n_fraud, p=[0.30, 0.70]),
-        "is_fraud": 1
-    }
-    df_fraud = pd.DataFrame(fraud_data)
-    df_fraud["amount_deviation_ratio"] = df_fraud["amount"] / (df_fraud["avg_amount_customer_30d"] + 1.0)
+    # Fraudulent transactions across realistic topologies:
+    # 1. Large Wire / Account Takeover (single large amount, novel device, foreign location)
+    # 2. High Velocity / Automated Card Testing (burst velocity, short intervals)
+    # 3. Mixed Multi-Vector Fraud
+    n_fraud_large = int(n_fraud * 0.45)
+    n_fraud_velocity = int(n_fraud * 0.35)
+    n_fraud_mixed = n_fraud - n_fraud_large - n_fraud_velocity
 
+    fraud_dfs = []
+
+    # Topology 1: Large Wire / Account Takeover
+    df_large = pd.DataFrame({
+        "amount": np.random.uniform(2500.0, 18000.0, size=n_fraud_large),
+        "transaction_type_encoded": np.random.choice([1, 2], size=n_fraud_large, p=[0.3, 0.7]),
+        "hour_of_day": np.random.choice([0, 1, 2, 3, 4, 22, 23], size=n_fraud_large),
+        "day_of_week": np.random.randint(0, 7, size=n_fraud_large),
+        "transaction_velocity_1h": np.random.poisson(lam=0.5, size=n_fraud_large),
+        "transaction_velocity_24h": np.random.poisson(lam=1.5, size=n_fraud_large),
+        "avg_amount_customer_30d": np.random.uniform(40.0, 120.0, size=n_fraud_large),
+        "time_since_last_transaction_seconds": np.random.exponential(scale=3600.0 * 24, size=n_fraud_large) + 3600,
+        "is_new_device": np.ones(n_fraud_large),
+        "is_new_merchant": np.random.choice([0, 1], size=n_fraud_large, p=[0.1, 0.9]),
+        "location_changed": np.random.choice([0, 1], size=n_fraud_large, p=[0.1, 0.9]),
+        "is_fraud": 1
+    })
+    df_large["amount_deviation_ratio"] = df_large["amount"] / (df_large["avg_amount_customer_30d"] + 1.0)
+    fraud_dfs.append(df_large)
+
+    # Topology 2: Velocity / Card Testing
+    df_velo = pd.DataFrame({
+        "amount": np.random.uniform(15.0, 350.0, size=n_fraud_velocity),
+        "transaction_type_encoded": np.random.choice([0, 1], size=n_fraud_velocity, p=[0.2, 0.8]),
+        "hour_of_day": np.random.randint(0, 24, size=n_fraud_velocity),
+        "day_of_week": np.random.randint(0, 7, size=n_fraud_velocity),
+        "transaction_velocity_1h": np.random.poisson(lam=5.0, size=n_fraud_velocity) + 3,
+        "transaction_velocity_24h": np.random.poisson(lam=15.0, size=n_fraud_velocity) + 8,
+        "avg_amount_customer_30d": np.random.uniform(30.0, 80.0, size=n_fraud_velocity),
+        "time_since_last_transaction_seconds": np.random.exponential(scale=45.0, size=n_fraud_velocity) + 5,
+        "is_new_device": np.random.choice([0, 1], size=n_fraud_velocity, p=[0.3, 0.7]),
+        "is_new_merchant": np.random.choice([0, 1], size=n_fraud_velocity, p=[0.2, 0.8]),
+        "location_changed": np.random.choice([0, 1], size=n_fraud_velocity, p=[0.4, 0.6]),
+        "is_fraud": 1
+    })
+    df_velo["amount_deviation_ratio"] = df_velo["amount"] / (df_velo["avg_amount_customer_30d"] + 1.0)
+    fraud_dfs.append(df_velo)
+
+    # Topology 3: Mixed High Velocity & High Amount
+    df_mixed = pd.DataFrame({
+        "amount": np.random.uniform(1500.0, 8000.0, size=n_fraud_mixed),
+        "transaction_type_encoded": np.random.choice([1, 2], size=n_fraud_mixed, p=[0.4, 0.6]),
+        "hour_of_day": np.random.choice([1, 2, 3, 4, 23], size=n_fraud_mixed),
+        "day_of_week": np.random.randint(0, 7, size=n_fraud_mixed),
+        "transaction_velocity_1h": np.random.poisson(lam=3.0, size=n_fraud_mixed) + 2,
+        "transaction_velocity_24h": np.random.poisson(lam=8.0, size=n_fraud_mixed) + 4,
+        "avg_amount_customer_30d": np.random.uniform(50.0, 100.0, size=n_fraud_mixed),
+        "time_since_last_transaction_seconds": np.random.exponential(scale=120.0, size=n_fraud_mixed) + 10,
+        "is_new_device": np.ones(n_fraud_mixed),
+        "is_new_merchant": np.ones(n_fraud_mixed),
+        "location_changed": np.ones(n_fraud_mixed),
+        "is_fraud": 1
+    })
+    df_mixed["amount_deviation_ratio"] = df_mixed["amount"] / (df_mixed["avg_amount_customer_30d"] + 1.0)
+    fraud_dfs.append(df_mixed)
+
+    df_fraud = pd.concat(fraud_dfs, ignore_index=True)
     df = pd.concat([df_normal, df_fraud], ignore_index=True).sample(frac=1.0, random_state=42).reset_index(drop=True)
     return df
 

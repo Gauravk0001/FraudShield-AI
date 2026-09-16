@@ -70,7 +70,16 @@ def extract_evidence_context(
             evidence["risk_level"] = risk.risk_level.value if hasattr(risk.risk_level, "value") else str(risk.risk_level)
             evidence["fraud_probability"] = float(risk.fraud_probability)
             evidence["anomaly_score"] = float(risk.anomaly_score)
-            evidence["top_risk_factors"] = risk.shap_factors or []
+            if risk.explanation and risk.explanation.top_factors:
+                factors = risk.explanation.top_factors
+                if isinstance(factors, dict):
+                    evidence["top_risk_factors"] = factors.get("factors", [])
+                elif isinstance(factors, list):
+                    evidence["top_risk_factors"] = factors
+                else:
+                    evidence["top_risk_factors"] = []
+            else:
+                evidence["top_risk_factors"] = []
 
     return evidence
 

@@ -30,7 +30,10 @@ def process_transaction_pipeline(
 
     tx_timestamp = tx_data.get("timestamp") or datetime.now(timezone.utc)
 
-    # 2. Persist initial transaction entity
+    # 2. Extract features against historical state prior to this transaction
+    features = extract_features(db, tx_data)
+
+    # 3. Persist initial transaction entity
     new_tx = Transaction(
         organization_id=organization_id,
         transaction_id=tx_id_str,
@@ -49,8 +52,6 @@ def process_transaction_pipeline(
     db.commit()
     db.refresh(new_tx)
 
-    # 3. Extract features & save
-    features = extract_features(db, tx_data)
     tx_feature_obj = TransactionFeature(
         transaction_id=new_tx.id,
         features_json=features

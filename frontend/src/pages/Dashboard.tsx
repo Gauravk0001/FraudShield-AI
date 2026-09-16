@@ -93,7 +93,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-2xl font-bold text-rose-700">{stats?.high_risk_transactions.toLocaleString() || '0'}</span>
-            <span className="text-xs text-rose-600 font-semibold">{stats?.fraud_rate_percentage}% Fraud Rate</span>
+            <span className="text-xs text-rose-600 font-semibold">{stats?.fraud_rate_percentage}% (Score ≥70)</span>
           </div>
         </Card>
 
@@ -104,7 +104,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="mt-2 flex items-baseline justify-between">
             <span className="text-2xl font-bold text-slate-900">{stats?.active_alerts.toLocaleString() || '0'}</span>
-            <span className="text-xs text-amber-600 font-medium">Action Required</span>
+            <span className="text-xs text-amber-600 font-medium">Policy: Score ≥30</span>
           </div>
         </Card>
 

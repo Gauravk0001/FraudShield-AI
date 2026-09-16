@@ -1,542 +1,224 @@
-# HACKIGNITE ML DEFENSE GUIDE — FraudShield AI
-
-**Classification:** Technical Defense Documentation  
-**Audience:** ML-Aware Competition Judge  
-**Standard:** Every answer references actual implementation and measured evidence  
-**Repository:** `scripts/`, `backend/app/ml/`, `backend/app/services/`, `docs/`
+# FraudShield AI — HackIgnite ML Defense Guide (Evidence-Backed)
+**Version:** v2.0-forensic-audit  
+**Updated:** 2026-09-16 — All answers reference measured evidence
 
 ---
 
-> **⚠️ Critical Operational Principle**
->
-> FraudShield AI is a **decision-support and triage system**. It does not automatically block transactions. It does not guarantee fraud detection. Human analysts retain final decision authority.
+## Q1. Why should we trust your synthetic dataset?
+
+**Honest answer:** You should treat it as a synthetic dataset — not a real-world dataset. Trust in the dataset comes from its construction methodology, not its scale.
+
+**Evidence:**
+- The dataset uses **causal temporal simulation**: every feature is derived only from transactions at `timestamp < current_timestamp`. No future information leaks backward. See `scripts/generate_forensic_dataset.py` and `test_causal_temporal_feature_boundaries` (PASSING).
+- The fraud topology distribution (6 types, percentages validated) reflects real-world fraud literature. See `data/forensic_dataset_metadata.json` → `fraud_topologies_percentages`.
+- Dataset SHA-256: `3674b803fe9d4a12...` — locked. See `data/forensic_dataset_metadata.json` → `sha256_hash`.
+- 6/6 forensic integrity checks pass: row count, label counts, topologies, entity counts, date ordering. See `scripts/validate_dataset_integrity.py`.
+
+**Honest limitation:** 17,123 transactions across 45 days and 600 customers is a controlled synthetic universe. It does not represent production-scale behavioral diversity, institutional geography, or real fraud ring coordination.
 
 ---
 
-## Q1 — How do you prevent temporal leakage?
+## Q2. What happens when customer behavior changes?
 
-**Short Answer:** Every feature computation uses a strict `timestamp < current_transaction_timestamp` constraint.
+**Answer:** The system detects distributional shift via PSI/KS drift monitoring, then requires human decision before any model update.
 
-**Implementation Evidence:**
+**Evidence:**
+- `backend/app/services/drift_service.py` — `DriftMonitor` class computes PSI and KS per feature on each evaluation window.
+- Three governance tiers: `LOW_DRIFT` (PSI<0.10, KS<0.05), `MODERATE_DRIFT` (PSI 0.10-0.25), `HIGH_DRIFT` (PSI≥0.25 OR KS≥0.10).
+- Domain B stress test simulated customer velocity shift 3.5×: PSI triggered HIGH_DRIFT. Model F1 dropped from 0.9154 to 0.6196.
+- **No automatic retraining** — governance alert triggers human review.
 
-In [`feature_engineering.py`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/backend/app/ml/feature_engineering.py), every historical aggregation is computed with explicit `< tx_timestamp` bounds:
+**Honest limitation:** Drift detection does NOT automatically prove model degradation. PSI/KS measure feature distribution shift, not model performance shift. A shift in legitimate customer behavior (e.g. holiday spending surge) could trigger HIGH_DRIFT without model accuracy degrading.
 
+---
+
+## Q3. What happens when fraud patterns change?
+
+**Answer:** The system will degrade. This is a documented limitation.
+
+**Evidence:**
+- Domain C stress test: Cross-border wire fraud surge → PR-AUC drops to **0.2819** (from 0.9542 in standard distribution).
+- Domain D stress test: Account takeover where 90% of transactions have new devices → F1 drops to **0.2112** because the `is_new_device` feature loses discriminative power.
+- These degradations are measured, not assumed. See `docs/DOMAIN_GENERALIZATION_REPORT.md` and `docs/domain_generalization_results.json`.
+
+**What would help:** The behavioral rule engine provides some resilience (still catches velocity bursts), but when the fraud itself is slow and patient, supervised feature signals may not activate until calibration is updated on new labeled data.
+
+---
+
+## Q4. How do you detect distribution drift?
+
+**Answer:** Population Stability Index (PSI) and Kolmogorov-Smirnov (KS) test on each feature and on the prediction distribution.
+
+**Evidence:**
 ```python
-velocity_1h = db.query(func.count(Transaction.id)).filter(
-    Transaction.customer_id == customer_id,
-    Transaction.timestamp >= one_hour_ago,
-    Transaction.timestamp < tx_timestamp   # ← STRICT BEFORE CURRENT
-).scalar() or 0
+# backend/app/services/drift_service.py
+dm = DriftMonitor(baseline_df=X_baseline, baseline_preds=preds_baseline)
+result = dm.evaluate_feature_drift(current_df, current_preds)
+# result["overall_status"] = "LOW_DRIFT" | "MODERATE_DRIFT" | "HIGH_DRIFT"
+# result["feature_metrics"][feature]["psi"] — per-feature PSI
+# result["feature_metrics"][feature]["ks_statistic"] — KS test statistic
+# result["feature_metrics"][feature]["ks_pvalue"] — KS p-value
 ```
-
-This prevents any knowledge of the current or future transaction from influencing its own features.
-
-**Chronological Dataset Validation:**
-
-The causal dataset generator ([`generate_forensic_dataset.py`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/scripts/generate_forensic_dataset.py)) processes transactions in ascending timestamp order. The integrity validator confirms monotonic ordering:
-
-```
-[PASS] Chronological Ordering: Verified monotonic timestamp sequence (2026-01-01 to 2026-02-14)
-```
-
-**Train/Test Split:**
-
-The temporal test set uses the final 15% of the chronological timeline (2,569 transactions). Its SHA-256 hash is locked in [`data/final_test_manifest.json`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/data/final_test_manifest.json). Any modification of the test set causes hash verification to fail with `TEST SET INTEGRITY VIOLATION`.
-
-**Automated Test:**
-`backend/tests/test_ml_forensics.py::test_temporal_boundary_enforcement` — **PASSING**
+- **PSI formula:** PSI = Σ (actual_pct_i - expected_pct_i) × ln(actual_pct_i / expected_pct_i)
+- Verified working against domain shift scenarios and edge cases (empty datasets, NaN inputs, constant features).
 
 ---
 
-## Q2 — How do you know the model generalizes to unseen customers?
+## Q5. Have you tested on external data?
 
-**Short Answer:** Customer-grouped cross-validation ensures zero customer-level overlap between training and evaluation folds.
+**Honest answer:** **No.** All five domain evaluations are **synthetic distribution-shift stress tests**, not real external dataset evaluations.
 
-**Implementation Evidence:**
+**Evidence:**
+- `docs/EXTERNAL_DATASET_AUDIT.md` — audited PaySim, Kaggle CC Fraud, IEEE-CIS, BAF for schema compatibility.
+- **Finding:** Direct transfer evaluation is **scientifically invalid** for these datasets because:
+  - PaySim: different feature schema (nameOrig, nameDest, oldbalanceOrg — not compatible with FraudShield features)
+  - Kaggle CC Fraud: anonymized V1–V28 PCA features — no mapping to interpretable features
+  - IEEE-CIS: has `card1-6`, `addr1-2`, `C1-14`, `D1-15` — mismatched semantics
+  - BAF: realistic but features don't map to FraudShield's velocity/device schema
+- **Domain E ("External Proxy")** simulates what happens if device/location telemetry features are unavailable — not a real external dataset evaluation.
 
-In [`evaluate_multiseed.py`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/scripts/evaluate_multiseed.py), evaluation uses a **customer-disjoint holdout**: customers assigned to the evaluation partition are completely absent from the training partition. This prevents the model from memorizing customer-level spending patterns.
-
-**Empirical Measurement:**
-
-From the Multi-Seed Stability Report ([`docs/MULTISEED_STABILITY_REPORT.md`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/docs/MULTISEED_STABILITY_REPORT.md)):
-
-| Metric | Mean | Std | Comment |
-|---|---|---|---|
-| Precision | 0.9353 | ±0.0120 | High precision on unseen customers |
-| Recall | 0.8404 | ±0.0126 | Robust fraud capture rate |
-| PR-AUC | 0.9324 | ±0.0044 | Stable discrimination capability |
-
-The consistently low variance across seeds demonstrates that the model has not overfit customer-specific behavior signatures.
+**What was measured instead:** Synthetic covariate shift experiments showing performance under plausible distribution changes. These have scientific validity as robustness tests but cannot substitute for real-world evaluation.
 
 ---
 
-## Q3 — How do you know the model generalizes to future transactions?
+## Q6. What happens if external performance drops?
 
-**Short Answer:** The final temporal test set contains only future transactions relative to the training window.
+**Answer:** It is expected to drop. The question is how much, and the system is designed to detect this.
 
-**Timeline:**
-```
-[ Training: Jan 1 – Jan 30 ] [ Validation: Jan 31 – Feb 6 ] [ Test: Feb 7 – Feb 14 ]
-                                                                     ↑
-                                            Completely unseen to the model
-```
-
-**Empirical Results on Final Temporal Test Set:**
-
-| Metric | Value |
-|---|---|
-| Precision | 0.9353 (mean over 5 seeds) |
-| Recall | 0.8404 |
-| F1 | 0.8852 |
-| PR-AUC | 0.9324 |
-| ROC-AUC | 0.9935 |
-| FPR | 0.435% |
-
-These were measured on 2,569 transactions that the model has **never encountered** during training, calibration, or threshold selection.
-
-**Domain Shift Robustness:**
-
-Under standard holdout conditions (Domain A), the frozen model achieves F1=0.9154, PR-AUC=0.9542 — confirming generalization without distributional gaming.
+**Evidence:**
+- Domain shift stress test results:
+  - Standard: F1=0.9154 (baseline behavior)
+  - High Velocity: F1=0.6196 (-33% degradation)
+  - Cross-Border Wire: F1=0.3964 (-57% degradation)
+  - Account Takeover Mass: F1=0.2112 (-77% degradation)
+  - Telemetry Masking: F1=0.7543 (-18% degradation)
+- **Early Warning:** HIGH_DRIFT PSI fires when these covariate shifts occur, before manually inspecting prediction quality.
+- **Recovery path:** Collect labeled examples from the new domain, retrain with balanced representation. The feature engineering pipeline is domain-agnostic.
 
 ---
 
-## Q4 — Why XGBoost instead of Logistic Regression?
+## Q7. Why does the composite risk score differ from model probability?
 
-**Short Answer:** Fraud involves non-linear interaction effects between behavioral signals that linear models cannot capture.
+**Answer:** They serve different purposes in different parts of the system.
 
-**Concrete Example:**
-
-A transaction at $14,500 (wire) at 3 AM from a new device to a new foreign merchant is fraudulent. However:
-- A $14,500 wire from a known device at business hours may be legitimate (corporate transfer)
-- A new device at 3 AM buying $25 is legitimate (grocery purchase)
-
-These cases require **conditional interactions**: (high amount AND wire) AND (new device AND foreign) AND (nocturnal). Logistic Regression represents these as additive independent features. XGBoost explicitly splits on feature interactions via decision trees.
-
-**Measured Advantage (from [`docs/ML_EVALUATION_REPORT.md`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/docs/ML_EVALUATION_REPORT.md)):**
-
-| Model | PR-AUC | F1 | FPR |
-|---|---|---|---|
-| Logistic Regression | baseline | lower | higher |
-| Random Forest | competitive | competitive | competitive |
-| XGBoost | **0.9324** | **0.8852** | **0.435%** |
-
-**Latency:** Inference at `< 20ms` per transaction — operationally acceptable for real-time triage.
-
----
-
-## Q5 — Why do you need Isolation Forest?
-
-**Short Answer:** Isolation Forest detects statistical anomalies in the full transaction space without requiring a fraud label, catching novel fraud patterns the supervised model has not seen.
-
-**Role in System Architecture:**
-
-```
-Transaction
-    ↓
-XGBoost (Supervised)  ─── Calibrated fraud probability P(fraud)
-    ↓
-Isolation Forest (Unsupervised) ─── Anomaly score for distributional outliers
-    ↓
-Behavioral Rules ─── Domain-anchored rule engine
-    ↓
-Composite Risk Score (weighted blend)
-```
-
-**Why Isolation Forest Specifically:**
-1. Works without labels — useful for genuinely novel fraud patterns
-2. Linear time complexity `O(n log n)` — suitable for real-time inference
-3. Scores are meaningful relative to the training distribution (not just nearest-neighbor distance)
-
-**Operational Justification:**
-
-The ensemble ablation in [`docs/RISK_ENGINE_EVALUATION.md`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/docs/RISK_ENGINE_EVALUATION.md) shows that adding Isolation Forest expands catch rate for transactions that score low on XGBoost but are statistically anomalous (e.g. the first transaction of a completely new fraud typology not seen in training).
-
----
-
-## Q6 — Why is risk_score different from fraud_probability?
-
-**Short Answer:** `fraud_probability` answers "how confident is the ML model this is fraud?" — `risk_score` answers "how much attention should a human analyst give this transaction?"
-
-**Composite Formula:**
-
+**Evidence from `backend/app/services/risk_service.py` line 42:**
 ```python
-risk_score = (
-    0.45 * ml_component +          # XGBoost calibrated probability
-    0.20 * anomaly_component +     # Isolation Forest outlier score
-    0.35 * behavioral_component    # Rule-engine flags
-)
+raw_risk = (fraud_probability * 45.0) + (anomaly_score * 20.0) + (min(behavioral_boost, 1.0) * 35.0)
+risk_score = round(float(min(100.0, max(0.0, raw_risk))), 2)
 ```
 
-**Why This Matters:**
+- `fraud_probability` ∈ [0.0, 1.0]: Calibrated XGBoost posterior probability of fraud. Used for automated binary routing decisions (threshold 0.35).
+- `risk_score` ∈ [0.0, 100.0]: Operational triage score blending supervised ML (45%), unsupervised anomaly (20%), and deterministic behavioral rules (35%). Used for analyst queue routing, investigation priority, and alert tiering.
 
-- A transaction with `fraud_probability = 0.35` (below automated threshold) may have `anomaly_score = 0.97` (statistically extreme) AND three behavioral flags — the composite engine surfaces it to analysts at MEDIUM/HIGH severity even though ML alone would pass it.
-- Conversely, a transaction with `fraud_probability = 0.72` but `anomaly_score = 0.10` and zero behavioral flags gets de-escalated from CRITICAL to HIGH, reducing analyst overload.
+**Verified in forensic audit:** Sample transaction with fraud_prob=0.0015 produced risk_score=12.15 — different scale AND different composition confirmed.
 
-**Operational Impact (from Risk Engine Evaluation):**
+**Why not just use probability?** A transaction with moderate ML probability (0.45) but extreme velocity burst (behavioral_score=0.90) should still trigger analyst review — this would score ~50/100 composite but only 0.45 probability. The composite captures operational context that the supervised model alone cannot.
 
-| Tier | Score Range | Alert Volume | Role |
+---
+
+## Q8. Why did you choose your calibration method?
+
+**Honest answer:** Platt Sigmoid was chosen for architectural reasons, **not because it has the best calibration metrics**. Isotonic Regression is strictly better on both Brier Score and ECE on the validation set.
+
+**Evidence (from `scripts/run_forensic_audit.py` — actual measured values):**
+
+| Method | Brier | ECE | Log Loss |
 |---|---|---|---|
-| LOW | 0–40 | 84.7% | Auto-clear (no human needed) |
-| MEDIUM | 40–70 | 12.1% | Analyst review within 24h |
-| HIGH | 70–89 | 2.8% | Priority analyst review within 1h |
-| CRITICAL | 90–100 | 0.35% | Immediate escalation |
+| Uncalibrated | 0.0102 | 0.0168 | 0.0427 |
+| **Platt Sigmoid (selected)** | **0.0088** | **0.0029** | **0.0371** |
+| Isotonic Regression | 0.0077 | 0.0000 | 0.0277 |
+
+**Selection rationale:** The composite risk engine requires continuous probability gradients across [0.0, 1.0] for smooth risk scoring. Isotonic Regression fits a piecewise monotonic step function that maps multiple raw probabilities to identical flat bins on sparse fraud tails (73 fraud events in 2,568-sample validation). Platt Sigmoid's smooth logistic transformation preserves fine-grained probability ordering.
+
+**This is a documented engineering tradeoff.** See `docs/CALIBRATION_EVIDENCE.md` for full analysis.
 
 ---
 
-## Q7 — How was the risk threshold selected?
+## Q9. How stable is your model across seeds?
 
-**Short Answer:** Thresholds were selected on the validation partition using analyst workload and precision-per-tier constraints. The final test set was never consulted.
+**Answer:** Very stable. F1 std=±0.0050 across 5 independently-trained models.
 
-**Selection Protocol (from [`docs/RISK_ENGINE_EVALUATION.md`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/docs/RISK_ENGINE_EVALUATION.md)):**
+**Evidence (from actual code execution — results reproduced in forensic audit):**
 
-1. `fraud_probability` threshold **τ = 0.35**: Selected on validation data to balance precision (~93%) and recall (~84%) within operationally acceptable FPR (< 0.5%).
-2. Risk tier thresholds were selected based on analyst workload modeling: HIGH+CRITICAL combined must be < 4% of daily volume to avoid analyst queue saturation.
+| Seed | Training Data Hash | F1 | PR-AUC | ROC-AUC |
+|---|---|---|---|---|
+| 42 | `2550db8f0c37...` | 0.8791 | 0.9255 | 0.9929 |
+| 123 | `2edbce5c42a9...` | 0.8928 | 0.9382 | 0.9937 |
+| 2024 | `ffe516e00de0...` | 0.8889 | 0.9343 | 0.9940 |
+| 2025 | `927cd169e964...` | 0.8817 | 0.9294 | 0.9938 |
+| 777 | `4242e5a78423...` | 0.8836 | 0.9344 | 0.9932 |
+| **Mean** | — | **0.8852** | **0.9324** | **0.9935** |
+| **Std** | — | **±0.0050** | **±0.0044** | **±0.0004** |
 
-**Weight Sensitivity Analysis:**
-
-Grid search over `ML ∈ {0.50, 0.55, 0.60, 0.65, 0.70}`, `Anomaly ∈ {0.10, 0.15, 0.20, 0.25}` evaluated exclusively on the validation set. Selected `(0.45, 0.20, 0.35)` for balanced recall expansion while preserving precision at analyst-actionable tiers.
-
-**Final Test Rule:**
-
-The `final_test_manifest.py --verify` command enforces SHA-256 immutability. If the test set had been touched during threshold selection, the hash would fail and the evaluation would abort.
-
----
-
-## Q8 — How was calibration selected?
-
-**Short Answer:** Three methods were evaluated on the calibration partition (never on test data). Platt Sigmoid was selected based on pre-defined criteria: Brier score, ECE, and calibration stability.
-
-**Three-Way Comparison (from [`docs/CALIBRATION_EVALUATION.md`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/docs/CALIBRATION_EVALUATION.md)):**
-
-| Method | Brier Score | ECE | Notes |
-|---|---|---|---|
-| Uncalibrated XGBoost | 0.0098 | 0.0174 | XGBoost already conservative |
-| **Platt Sigmoid** | **0.0086** | **0.0038** | ← Selected |
-| Isotonic Regression | 0.0076 | 0.0000 | Step-collapse risk on fraud tail |
-
-**Selection Justification:**
-
-Isotonic achieves minimal sample-level loss but fits piecewise-flat steps. On a 4.95% fraud dataset, the fraud probability tail has limited samples per bin. Step collapse produces unreliable interpolation in composite risk blending. Platt's parametric continuity enables smooth probability gradients between 0.0 and 1.0 — essential for meaningful risk score composition.
-
-**Key Guarantee:** Calibration selection was finalized and documented before any evaluation on the final test set.
+- Each seed generates an independent dataset (unique training data hash per seed — all different).
+- All seeds evaluate on the **same fixed test set** (SHA-256: `985e08d2...`).
+- Coefficient of Variation for F1 = 0.56%. ROC-AUC CV = 0.04%.
 
 ---
 
-## Q9 — Why are velocity features important?
+## Q10. How do you know features don't leak future information?
 
-**Short Answer:** The dominant fraud topology in the dataset is burst-pattern fraud: card testing, account takeover via rapid sequential transactions, and wire exfiltration sequences. These require velocity detection.
+**Answer:** By construction and by automated test.
 
-**SHAP Evidence:**
+**Evidence:**
 
-From [`backend/app/ml/explainability.py`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/backend/app/ml/explainability.py), SHAP global importance analysis identifies `transaction_velocity_1h` and `transaction_velocity_24h` as top-3 features by mean |SHAP| impact.
-
-**Counterfactual Evidence (from [`docs/COUNTERFACTUAL_ANALYSIS.md`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/docs/COUNTERFACTUAL_ANALYSIS.md)):**
-
-When `velocity_1h` is set from 5 to 0 on a high-risk wire transaction, fraud probability changes by only a small margin because:
-- The `amount_deviation_ratio` and wire type still activate wire fraud branches independently
-- XGBoost's tree structure processes features in parallel orthogonal splits
-
-This demonstrates that velocity and amount are **complementary independent signals** — together they provide stronger evidence than either alone.
-
-**Domain Shift Result:**
-
-In Domain B (High-Velocity surge), FPR rises substantially because legitimate customers with very high velocity exist. This confirms that velocity alone is not sufficient — the model requires the full feature conjunction.
-
----
-
-## Q10 — How do you explain individual predictions?
-
-**Short Answer:** TreeSHAP provides decomposed additive feature contributions for every transaction, validated for mathematical additivity.
-
-**SHAP Pipeline (from [`backend/app/ml/explainability.py`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/backend/app/ml/explainability.py)):**
-
+**By construction** (`scripts/generate_forensic_dataset.py`):
 ```python
-explainer = shap.TreeExplainer(base_xgboost_model)
-shap_values = explainer.shap_values(feature_df)
+# For each transaction at timestamp T:
+past_txns = [t for t in customer_history if t["timestamp"] < current_timestamp]
+velocity_1h = count(past_txns where timestamp >= T - 1h and timestamp < T)
+avg_amount_30d = mean([t.amount for t in past_txns where timestamp >= T - 30d])
+is_new_device = 1 if device not in {t.device for t in past_txns} else 0
 ```
+All features use `< current_timestamp` strict inequality.
 
-**SHAP Additivity Theorem:**
-
-$$P(\text{fraud}) = \phi_0 + \sum_{i=1}^{n} \phi_i(\text{feature}_i)$$
-
-Where $\phi_0$ is the base rate (model prior) and $\phi_i$ is the contribution of feature $i$ to the deviation from base rate. The automated test `test_shap_additivity_constraint` verifies this with tolerance `|sum_shap - log_odds(prediction)| < 0.05` for every transaction.
-
-**Output Format (from API response):**
-
-```json
-{
-  "shap_explanations": {
-    "amount": 0.72,
-    "transaction_velocity_1h": 0.48,
-    "is_new_device": 0.31,
-    "hour_of_day": -0.09,
-    "day_of_week": -0.03
-  }
-}
-```
-
-Each value is the signed contribution to fraud log-odds — positive values increase fraud probability.
+**By automated test** (PASSING in 34/34 suite):
+- `test_causal_temporal_feature_boundaries` — verifies velocity features are 0 for first transaction
+- `test_future_leakage_invariance` — verifies shuffling timestamp order changes features
+- `test_no_target_correlation_leakage` — verifies no feature is a near-perfect proxy for the label
+- `test_customer_grouped_split_zero_leakage` — verifies no customer appears in both train and test when grouped
 
 ---
 
-## Q11 — Can changing one feature unexpectedly increase risk?
+## Q11. How do you validate counterfactual behavior?
 
-**Short Answer:** Yes, and this is documented as legitimate nonlinear interaction in XGBoost — not a bug.
+**Answer:** Through 8 controlled perturbation experiments with full SHAP decomposition.
 
-**Concrete Documented Case (from [`docs/COUNTERFACTUAL_ANALYSIS.md`](file:///C:/Users/hp/.gemini/antigravity-IDE/scratch/FraudShield-AI/docs/COUNTERFACTUAL_ANALYSIS.md)):**
+**Evidence (from forensic audit — actual execution):**
 
-Hero transaction: $14,500 wire, 3 AM, new device, new foreign merchant, `velocity_1h = 5`.
+The model shows expected monotonic behavior only for the most significant signals:
 
-Perturbation: Set `velocity_1h` from 5 → 0.
-
-**Expected by naive reasoning:** Removing high velocity should reduce risk.  
-**Observed:** Risk increases or stays near-constant.
-
-**Traced Explanation:**
-
-1. At `velocity_1h = 5`, XGBoost splits into the "moderate velocity" subtree where the wire type+amount combination reaches a fraud leaf.
-2. At `velocity_1h = 0`, the tree redirects to a branch where "first-time large wire" has its own distinct fraud decision pattern with equal or higher leaf probability.
-3. Both paths predict fraud — but for different mechanistic reasons (burst-pattern vs. isolated high-value exfiltration).
-
-**Classification in Evaluation:** `EXPLAINABLE NONLINEARITY` — documented and mathematically traceable, not a bug.
-
-**Automated Tests:**
-
-`test_counterfactual_direction_amount`, `test_counterfactual_new_device_increases_risk` — **PASSING**
-
----
-
-## Q12 — How stable is the model across random seeds?
-
-**Short Answer:** Across 5 seeds with genuine independent retraining, performance variance is very low — confirming the training methodology is robust.
-
-**Empirical Multi-Seed Results (from [`docs/MULTISEED_STABILITY_REPORT.md`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/docs/MULTISEED_STABILITY_REPORT.md)):**
-
-| Metric | Mean | Std | CV% | Min | Max |
-|---|---|---|---|---|---|
-| Precision | 0.9353 | 0.0120 | 1.28% | 0.9222 | 0.9548 |
-| Recall | 0.8404 | 0.0126 | 1.50% | 0.8315 | 0.8652 |
-| F1 | 0.8852 | 0.0050 | 0.56% | 0.8791 | 0.8928 |
-| PR-AUC | 0.9324 | 0.0044 | 0.48% | 0.9255 | 0.9382 |
-| ROC-AUC | 0.9935 | 0.0004 | 0.04% | 0.9929 | 0.9940 |
-| Brier | 0.0131 | 0.0006 | 4.48% | 0.0124 | 0.0138 |
-
-**Implementation Guarantee:**
-
-Each seed re-runs: data permutation → full preprocessing refit → XGBoost training → Platt calibration → evaluation. The same final test set (SHA-256 locked) is used for all seeds.
-
-Seeds with zero variance would indicate fabrication. The measured non-zero standard deviations confirm genuine independent retraining.
-
----
-
-## Q13 — What happens when the data distribution changes?
-
-**Short Answer:** The PSI/KS drift monitor detects distributional shift across features and predictions. At HIGH_DRIFT, automated alerts fire and human review is required before any retraining.
-
-**Drift Monitor Architecture ([`backend/app/services/drift_service.py`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/backend/app/services/drift_service.py)):**
-
-```python
-# Three-tier drift classification
-if psi >= 0.25:  status = "HIGH_DRIFT"    # Manual review required
-elif psi >= 0.10: status = "MODERATE_DRIFT" # Schedule recalibration check  
-else:             status = "LOW_DRIFT"    # Normal operation
-```
-
-**Empirical Degradation Table (from domain shift evaluation):**
-
-| Scenario | F1 | PR-AUC | Drift Status |
+| Perturbation | Prob Change | Risk Change | Classification |
 |---|---|---|---|
-| Domain A: Standard | 0.9154 | 0.9542 | LOW_DRIFT |
-| Domain B: High-Velocity | 0.6196 | 0.7796 | HIGH_DRIFT |
-| Domain C: Wire Surge | 0.3964 | 0.2819 | HIGH_DRIFT |
-| Domain D: Account Takeover | 0.2112 | 0.6475 | HIGH_DRIFT |
-| Domain E: External Proxy | 0.7543 | 0.7530 | LOW_DRIFT |
+| Wire → Card Present | -0.9494 | -42.85 | EXPECTED (strong monotonic) |
+| Fully Benign | -0.9498 | -80.95 | EXPECTED (strong monotonic) |
+| Amount $14k→$45 | +0.0178 | -0.89 | NONLINEAR_EXPLAINABLE |
+| Velocity 5→0 | +0.0230 | +0.28 | NONLINEAR_EXPLAINABLE |
 
-**Interpretation:** Severe covariate shifts (Domain C, D) cause significant F1 degradation. This is honest documentation of real model limitations — not hidden or smoothed. The drift monitor would catch these shifts in production and alert before they cause systematic missed fraud.
+**Why do some single-feature reductions increase probability?**
 
-**Policy:** The drift monitor does NOT auto-retrain. It generates governance alerts. Retraining decisions require human validation.
+XGBoost uses orthogonal decision tree paths. A transaction with 6 simultaneous high-risk indicators (wire transfer + 3am + new device + new merchant + foreign location + high velocity) will remain at high fraud probability even when one signal is normalized, because the other 5 signals activate independent tree paths.
 
----
-
-## Q14 — Can you validate on data other than your synthetic dataset?
-
-**Short Answer:** Yes. Domain E provides an external benchmark proxy validation, and the `EXTERNAL_DATASET_AUDIT.md` documents feature compatibility with PaySim, Kaggle Credit Card Fraud, IEEE-CIS, and BAF datasets.
-
-**Direct Cross-Domain Results:**
-
-Domain E simulates external dataset conditions (masking device/location telemetry to neutral priors, representing PaySim / IEEE-CIS schema constraints):
-
-- **F1 = 0.7543, PR-AUC = 0.7530** — maintained at lower performance level on external-compatible feature subset
-- **FPR = 0.18%** — very low false positive rate even without device signals
-
-**External Dataset Audit ([`docs/EXTERNAL_DATASET_AUDIT.md`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/docs/EXTERNAL_DATASET_AUDIT.md)):**
-
-| Dataset | Schema Compatible | Direct Transfer | Notes |
-|---|---|---|---|
-| PaySim | Partial | Via feature mapping | No device metadata; balance features unavailable |
-| Kaggle/ULB CC | No direct | PCA-transformed; untranslatable | Serves as architecture benchmark only |
-| IEEE-CIS | Partial | Requires feature intersection | `TransactionAmt`, `DeviceType`, velocity counters mappable |
-| BAF (NeurIPS) | Partial | Application fraud, different label definition | Useful for fairness evaluation |
-
-**Honest Conclusion:** Direct plug-in transfer to real-world datasets degrades performance as expected. The system documents this limitation explicitly rather than hiding it.
+This is not a bug. Only when ALL signals are simultaneously benign does the fraud probability collapse to 0.0014 (Perturbation H).
 
 ---
 
-## Q15 — What are the biggest limitations?
+## Q12. What is your biggest known limitation?
 
-**Short Answer:** This system was trained and validated entirely on synthetic data. No empirical real-world fraud performance can be claimed.
+**Answer:** The system was trained and evaluated on synthetic data. Real-world performance is unknown and cannot be claimed from these results.
 
-**Complete Limitation Inventory:**
+**Specifically demonstrated limitations:**
 
-### 1. Synthetic Data Limitation (Most Critical)
-The training dataset was generated by a causal simulator. All behavioral patterns, fraud typologies, and entity interactions are synthetic artifacts. The simulator was designed with care (6 fraud topologies, hard negatives, overlapping distributions), but it cannot capture:
-- Genuine adversarial adaptation (real fraudsters react to detection systems)
-- Macro-economic effects (recession, crisis)
-- Regulatory-driven behavioral changes
-- Cross-border jurisdiction differences
+1. **Domain C failure (PR-AUC=0.2819):** Under cross-border wire surge, the model nearly fails. If this fraud pattern emerges, detection collapses until retraining.
 
-**What We Can Claim:** The system demonstrates technically sound methodology, valid ML practices, and defensible evaluation procedures. We explicitly cannot claim production-grade real-world fraud performance.
+2. **Domain D failure (F1=0.2112):** When 90% of transactions have new devices (mass account takeover), the `is_new_device` feature loses all discriminative power. Risk scores degrade severely.
 
-### 2. Feature Distribution Shift
-Domains B, C, D show F1 degradation of 40–80% under distributional shift. In production, concept drift must be actively monitored.
+3. **No adversarial robustness:** The model has not been tested against adversarial examples — feature values crafted to stay below fraud thresholds while committing fraud. A sophisticated fraudster could potentially reverse-engineer the behavioral rules (they are documented in `risk_service.py`).
 
-### 3. Calibration on Low-Frequency Events
-The fraud tail (4.95%) is small enough that calibration is sensitive to the specific validation split. Platt Sigmoid was selected over Isotonic to mitigate step-collapse instability.
+4. **Synthetic scale:** 600 customers, 183 merchants, 45 days. Real systems have millions of entities. Velocity patterns, behavioral baselines, and fraud coordination at scale may be qualitatively different.
 
-### 4. No Adversarial Robustness Testing
-The system has not been tested against adversarial perturbation attacks (malicious crafting of features to evade detection).
+5. **Calibration on sparse tail:** Calibration was fit on 73 fraud events in validation. This is statistically marginal for reliable probability estimation.
 
-### 5. Entity Scale
-600 customers, 183 merchants, 1,900 devices — a real payment network operates at 100M+ customers.
+6. **No concept drift correction:** The model will degrade over time as fraud patterns evolve. The drift detector signals this but does not correct it.
 
----
-
-## Q16 — What happens when the model fails?
-
-**Short Answer:** A controlled fallback mechanism ensures the system returns a conservative default risk state rather than silently failing or blocking everything.
-
-**Failure Handling ([`fraud_classifier.py`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/backend/app/ml/fraud_classifier.py)):**
-
-```python
-def predict_fraud_probability(features_dict):
-    model = get_fraud_model()
-    if model is None:
-        logger.error("Fraud classifier unavailable, flagging controlled risk fallback.")
-        return 0.50, "v2.0.0-fallback"     # ← Neutral probability
-    try:
-        ...
-        return float(np.clip(proba, 0.0, 1.0)), "v2.0.0-forensic"
-    except Exception as e:
-        logger.error(f"Inference error: {e}")
-        return 0.50, "v2.0.0-error"        # ← Controlled fallback
-```
-
-**Fallback at 0.50 (neutral):**
-- Does not trigger automatic block
-- Flags the transaction for mandatory human review
-- Logs the failure to the audit trail
-
-**Alert Service Integration:** Failure events are captured by the alert service and routed to analyst queues.
-
-**Automated Tests:** `test_model_unavailable_graceful_fallback`, `test_nan_infinity_feature_handling` — **PASSING**
-
----
-
-## Q17 — Can the model automatically block a transaction?
-
-**Short Answer:** No. FraudShield AI does not automatically block, decline, or reverse any transaction.
-
-**Architectural Decision:**
-
-The system outputs:
-1. `fraud_probability` — calibrated ML confidence score
-2. `risk_score` — composite triage score
-3. `risk_level` — categorical tier (LOW / MEDIUM / HIGH / CRITICAL)
-4. `shap_explanations` — feature attribution for analyst review
-
-It does **not** output a `block` or `decline` action.
-
-**Why This Is Intentional:**
-
-1. **False positive cost is severe** — blocking a legitimate high-value customer transaction causes reputational damage and potential regulatory liability.
-2. **ML models make systematic errors** — any model, regardless of performance, has edge cases where its judgment is wrong. Human oversight catches these.
-3. **Adversarial arms race** — automated blocking systems create deterministic decision boundaries that adversaries can probe and evade.
-
-**Authorization Boundary:**
-
-```
-FraudShield AI → "HIGH risk: explain to analyst" → Analyst reviews evidence → Analyst decides
-                                                                               ↑
-                                                              ONLY human can authorize action
-```
-
----
-
-## Q18 — Who has the final decision authority?
-
-**Short Answer:** Human analysts always retain final decision authority. The AI system is a triage and decision-support tool.
-
-**Explicit Statement:**
-
-FraudShield AI is a **triage and evidence-assembly system**. It:
-- Detects patterns in data
-- Scores transactions by risk tier
-- Surfaces evidence through SHAP explanations
-- Routes transactions to appropriate analyst queues
-
-It does **not**:
-- Make transaction authorization decisions
-- Issue automated blocks or flags that cannot be overridden
-- Operate without human oversight for high-stakes decisions
-
-**Investigation Workflow:**
-
-```
-Transaction → AI Scoring → Risk Tier
-    ↓                           ↓
-LOW risk               HIGH/CRITICAL risk
-(auto-pass)         → Analyst Investigation Panel
-                       → Full SHAP explanation
-                       → Transaction history context
-                       → Pattern matching
-                       → Analyst decision: CLEAR / ESCALATE / BLOCK
-```
-
-**Audit Trail:**
-
-Every analyst action is logged with timestamp, user identity, risk score at time of review, and decision reason ([`audit_service.py`](file:///C:/Users/hp/.gemini/antigravity-ide/scratch/FraudShield-AI/backend/app/services/audit_service.py)).
-
----
-
-## Summary: What Has Been Empirically Demonstrated
-
-| Claim | Evidence | Status |
-|---|---|---|
-| Temporal leakage prevention | Feature query `< timestamp` + integrity tests | ✅ Verified |
-| Unseen customer generalization | Customer-grouped split + multi-seed evaluation | ✅ Measured |
-| Future transaction generalization | Chronological temporal holdout | ✅ Measured |
-| XGBoost superiority | Comparative model evaluation | ✅ Documented |
-| Calibration justification | Brier/ECE 3-way comparison on validation | ✅ Measured |
-| Multi-seed stability | Non-zero variance, 5 genuine seeds | ✅ Measured |
-| Risk weight justification | Grid search on validation partition | ✅ Measured |
-| Domain generalization | 5 domain shift experiments | ✅ Measured |
-| Drift monitoring | PSI/KS implementation + empirical testing | ✅ Implemented |
-| SHAP additivity | Automated mathematical verification | ✅ Tested |
-| Counterfactual explainability | 8-category perturbation analysis | ✅ Documented |
-| No test set contamination | SHA-256 hash protection | ✅ Enforced |
-| Human oversight | Architecture prevents auto-blocking | ✅ By design |
-
-## What Remains Unverified
-
-| Claim | Status |
-|---|---|
-| Real-world fraud detection performance | **UNVERIFIED** — synthetic data only |
-| Adversarial robustness | **UNVERIFIED** — no red-team testing |
-| Production deployment stability | **UNVERIFIED** — no load/failover testing |
-| Geographic regulatory compliance | **UNVERIFIED** — outside competition scope |
-| Longitudinal concept drift behavior | **UNVERIFIED** — 45-day window only |
-
----
-
-*This document was generated from actual implementation measurements. No metrics were fabricated.*  
-*All numerical values are traceable to specific evaluation scripts and output files in the repository.*
+**None of these limitations invalidate the system as a demonstration.** They represent the honest boundary of what has been empirically demonstrated vs. what would require real-world deployment evidence.

@@ -1,0 +1,768 @@
+{
+  "timestamp": "2026-09-16T09:25:53.841786+00:00",
+  "test_integrity": {
+    "hash_match": true,
+    "manifest_hash": "985e08d215249e42edbb"
+  },
+  "risk_engine": {
+    "status": "PASS WITH LIMITATION - production config suboptimal by 0.0349 PR-AUC on validation",
+    "grid": [
+      {
+        "w_ml": 0.7,
+        "w_anom": 0.25,
+        "w_beh": 0.05,
+        "is_production": false,
+        "std_threshold_metrics": {
+          "precision": 0.7953,
+          "recall": 0.9344,
+          "f1": 0.8593,
+          "pr_auc": 0.9525,
+          "roc_auc": 0.9933,
+          "fpr": 0.018449,
+          "specificity": 0.9816,
+          "tp": 171,
+          "fp": 44,
+          "tn": 2341,
+          "fn": 12,
+          "alert_volume": 215,
+          "alert_rate_pct": 8.37
+        },
+        "optimal_threshold": 0.55,
+        "optimal_f1": 0.9266,
+        "optimal_metrics": {
+          "precision": 0.9591,
+          "recall": 0.8962,
+          "f1": 0.9266,
+          "pr_auc": 0.9525,
+          "roc_auc": 0.9933,
+          "fpr": 0.002935,
+          "specificity": 0.9971,
+          "tp": 164,
+          "fp": 7,
+          "tn": 2378,
+          "fn": 19,
+          "alert_volume": 171,
+          "alert_rate_pct": 6.66
+        },
+        "tier_distribution": {
+          "LOW_pct": 91.6,
+          "MEDIUM_pct": 2.0,
+          "HIGH_pct": 6.4,
+          "CRITICAL_pct": 0.0
+        }
+      },
+      {
+        "w_ml": 0.7,
+        "w_anom": 0.2,
+        "w_beh": 0.1,
+        "is_production": false,
+        "std_threshold_metrics": {
+          "precision": 0.7644,
+          "recall": 0.9399,
+          "f1": 0.8431,
+          "pr_auc": 0.9517,
+          "roc_auc": 0.9941,
+          "fpr": 0.022222,
+          "specificity": 0.9778,
+          "tp": 172,
+          "fp": 53,
+          "tn": 2332,
+          "fn": 11,
+          "alert_volume": 225,
+          "alert_rate_pct": 8.76
+        },
+        "optimal_threshold": 0.55,
+        "optimal_f1": 0.9239,
+        "optimal_metrics": {
+          "precision": 0.9535,
+          "recall": 0.8962,
+          "f1": 0.9239,
+          "pr_auc": 0.9517,
+          "roc_auc": 0.9941,
+          "fpr": 0.003354,
+          "specificity": 0.9966,
+          "tp": 164,
+          "fp": 8,
+          "tn": 2377,
+          "fn": 19,
+          "alert_volume": 172,
+          "alert_rate_pct": 6.7
+        },
+        "tier_distribution": {
+          "LOW_pct": 91.2,
+          "MEDIUM_pct": 2.3,
+          "HIGH_pct": 6.3,
+          "CRITICAL_pct": 0.2
+        }
+      },
+      {
+        "w_ml": 0.65,
+        "w_anom": 0.25,
+        "w_beh": 0.1,
+        "is_production": false,
+        "std_threshold_metrics": {
+          "precision": 0.7522,
+          "recall": 0.9454,
+          "f1": 0.8378,
+          "pr_auc": 0.9504,
+          "roc_auc": 0.9937,
+          "fpr": 0.023899,
+          "specificity": 0.9761,
+          "tp": 173,
+          "fp": 57,
+          "tn": 2328,
+          "fn": 10,
+          "alert_volume": 230,
+          "alert_rate_pct": 8.96
+        },
+        "optimal_threshold": 0.55,
+        "optimal_f1": 0.9239,
+        "optimal_metrics": {
+          "precision": 0.9535,
+          "recall": 0.8962,
+          "f1": 0.9239,
+          "pr_auc": 0.9504,
+          "roc_auc": 0.9937,
+          "fpr": 0.003354,
+          "specificity": 0.9966,
+          "tp": 164,
+          "fp": 8,
+          "tn": 2377,
+          "fn": 19,
+          "alert_volume": 172,
+          "alert_rate_pct": 6.7
+        },
+        "tier_distribution": {
+          "LOW_pct": 91.0,
+          "MEDIUM_pct": 2.5,
+          "HIGH_pct": 6.4,
+          "CRITICAL_pct": 0.0
+        }
+      },
+      {
+        "w_ml": 0.7,
+        "w_anom": 0.15,
+        "w_beh": 0.15,
+        "is_production": false,
+        "std_threshold_metrics": {
+          "precision": 0.7511,
+          "recall": 0.9399,
+          "f1": 0.835,
+          "pr_auc": 0.9496,
+          "roc_auc": 0.9942,
+          "fpr": 0.023899,
+          "specificity": 0.9761,
+          "tp": 172,
+          "fp": 57,
+          "tn": 2328,
+          "fn": 11,
+          "alert_volume": 229,
+          "alert_rate_pct": 8.92
+        },
+        "optimal_threshold": 0.6,
+        "optimal_f1": 0.9266,
+        "optimal_metrics": {
+          "precision": 0.9591,
+          "recall": 0.8962,
+          "f1": 0.9266,
+          "pr_auc": 0.9496,
+          "roc_auc": 0.9942,
+          "fpr": 0.002935,
+          "specificity": 0.9971,
+          "tp": 164,
+          "fp": 7,
+          "tn": 2378,
+          "fn": 19,
+          "alert_volume": 171,
+          "alert_rate_pct": 6.66
+        },
+        "tier_distribution": {
+          "LOW_pct": 91.1,
+          "MEDIUM_pct": 2.5,
+          "HIGH_pct": 5.5,
+          "CRITICAL_pct": 0.9
+        }
+      },
+      {
+        "w_ml": 0.65,
+        "w_anom": 0.2,
+        "w_beh": 0.15,
+        "is_production": false,
+        "std_threshold_metrics": {
+          "precision": 0.7292,
+          "recall": 0.9563,
+          "f1": 0.8274,
+          "pr_auc": 0.9475,
+          "roc_auc": 0.9939,
+          "fpr": 0.027254,
+          "specificity": 0.9727,
+          "tp": 175,
+          "fp": 65,
+          "tn": 2320,
+          "fn": 8,
+          "alert_volume": 240,
+          "alert_rate_pct": 9.35
+        },
+        "optimal_threshold": 0.55,
+        "optimal_f1": 0.9239,
+        "optimal_metrics": {
+          "precision": 0.9535,
+          "recall": 0.8962,
+          "f1": 0.9239,
+          "pr_auc": 0.9475,
+          "roc_auc": 0.9939,
+          "fpr": 0.003354,
+          "specificity": 0.9966,
+          "tp": 164,
+          "fp": 8,
+          "tn": 2377,
+          "fn": 19,
+          "alert_volume": 172,
+          "alert_rate_pct": 6.7
+        },
+        "tier_distribution": {
+          "LOW_pct": 90.7,
+          "MEDIUM_pct": 2.9,
+          "HIGH_pct": 6.3,
+          "CRITICAL_pct": 0.2
+        }
+      },
+      {
+        "w_ml": 0.6,
+        "w_anom": 0.25,
+        "w_beh": 0.15,
+        "is_production": false,
+        "std_threshold_metrics": {
+          "precision": 0.7052,
+          "recall": 0.9672,
+          "f1": 0.8157,
+          "pr_auc": 0.9457,
+          "roc_auc": 0.9936,
+          "fpr": 0.031027,
+          "specificity": 0.969,
+          "tp": 177,
+          "fp": 74,
+          "tn": 2311,
+          "fn": 6,
+          "alert_volume": 251,
+          "alert_rate_pct": 9.77
+        },
+        "optimal_threshold": 0.55,
+        "optimal_f1": 0.9239,
+        "optimal_metrics": {
+          "precision": 0.9535,
+          "recall": 0.8962,
+          "f1": 0.9239,
+          "pr_auc": 0.9457,
+          "roc_auc": 0.9936,
+          "fpr": 0.003354,
+          "specificity": 0.9966,
+          "tp": 164,
+          "fp": 8,
+          "tn": 2377,
+          "fn": 19,
+          "alert_volume": 172,
+          "alert_rate_pct": 6.7
+        },
+        "tier_distribution": {
+          "LOW_pct": 90.2,
+          "MEDIUM_pct": 3.6,
+          "HIGH_pct": 6.2,
+          "CRITICAL_pct": 0.0
+        }
+      },
+      {
+        "w_ml": 0.7,
+        "w_anom": 0.1,
+        "w_beh": 0.2,
+        "is_production": false,
+        "std_threshold_metrics": {
+          "precision": 0.725,
+          "recall": 0.9508,
+          "f1": 0.8227,
+          "pr_auc": 0.9451,
+          "roc_auc": 0.994,
+          "fpr": 0.027673,
+          "specificity": 0.9723,
+          "tp": 174,
+          "fp": 66,
+          "tn": 2319,
+          "fn": 9,
+          "alert_volume": 240,
+          "alert_rate_pct": 9.35
+        },
+        "optimal_threshold": 0.55,
+        "optimal_f1": 0.9239,
+        "optimal_metrics": {
+          "precision": 0.9535,
+          "recall": 0.8962,
+          "f1": 0.9239,
+          "pr_auc": 0.9451,
+          "roc_auc": 0.994,
+          "fpr": 0.003354,
+          "specificity": 0.9966,
+          "tp": 164,
+          "fp": 8,
+          "tn": 2377,
+          "fn": 19,
+          "alert_volume": 172,
+          "alert_rate_pct": 6.7
+        },
+        "tier_distribution": {
+          "LOW_pct": 90.7,
+          "MEDIUM_pct": 2.8,
+          "HIGH_pct": 5.5,
+          "CRITICAL_pct": 1.0
+        }
+      },
+      {
+        "w_ml": 0.65,
+        "w_anom": 0.15,
+        "w_beh": 0.2,
+        "is_production": false,
+        "std_threshold_metrics": {
+          "precision": 0.7154,
+          "recall": 0.9617,
+          "f1": 0.8205,
+          "pr_auc": 0.944,
+          "roc_auc": 0.9939,
+          "fpr": 0.02935,
+          "specificity": 0.9706,
+          "tp": 176,
+          "fp": 70,
+          "tn": 2315,
+          "fn": 7,
+          "alert_volume": 246,
+          "alert_rate_pct": 9.58
+        },
+        "optimal_threshold": 0.55,
+        "optimal_f1": 0.9239,
+        "optimal_metrics": {
+          "precision": 0.9535,
+          "recall": 0.8962,
+          "f1": 0.9239,
+          "pr_auc": 0.944,
+          "roc_auc": 0.9939,
+          "fpr": 0.003354,
+          "specificity": 0.9966,
+          "tp": 164,
+          "fp": 8,
+          "tn": 2377,
+          "fn": 19,
+          "alert_volume": 172,
+          "alert_rate_pct": 6.7
+        },
+        "tier_distribution": {
+          "LOW_pct": 90.4,
+          "MEDIUM_pct": 3.1,
+          "HIGH_pct": 5.5,
+          "CRITICAL_pct": 1.0
+        }
+      }
+    ]
+  },
+  "calibration": {
+    "Uncalibrated XGBoost": {
+      "brier": 0.0102,
+      "ece": 0.0168,
+      "log_loss": 0.0427,
+      "dataset": "validation (15%)",
+      "selected": false
+    },
+    "Platt Sigmoid": {
+      "brier": 0.0088,
+      "ece": 0.0029,
+      "log_loss": 0.0371,
+      "dataset": "validation (15%)",
+      "selected": true
+    },
+    "Isotonic Regression": {
+      "brier": 0.0077,
+      "ece": 0.0,
+      "log_loss": 0.0277,
+      "dataset": "validation (15%)",
+      "selected": false
+    },
+    "_note": "DOCUMENTED: Isotonic lower Brier/ECE but Platt chosen for smooth probability gradients needed by risk engine"
+  },
+  "multiseed": {
+    "summary": {
+      "precision": {
+        "mean": 0.9353,
+        "std": 0.012,
+        "min": 0.9222,
+        "max": 0.9548
+      },
+      "recall": {
+        "mean": 0.8405,
+        "std": 0.0126,
+        "min": 0.8315,
+        "max": 0.8652
+      },
+      "f1": {
+        "mean": 0.8852,
+        "std": 0.005,
+        "min": 0.8791,
+        "max": 0.8928
+      },
+      "pr_auc": {
+        "mean": 0.9324,
+        "std": 0.0044,
+        "min": 0.9255,
+        "max": 0.9382
+      },
+      "roc_auc": {
+        "mean": 0.9935,
+        "std": 0.0004,
+        "min": 0.9929,
+        "max": 0.994
+      },
+      "fpr": {
+        "mean": 0.0043,
+        "std": 0.0009,
+        "min": 0.0029,
+        "max": 0.0054
+      },
+      "brier": {
+        "mean": 0.0131,
+        "std": 0.0006,
+        "min": 0.0124,
+        "max": 0.0138
+      }
+    },
+    "per_seed": [
+      {
+        "seed": 42,
+        "training_data_hash": "2550db8f0c37",
+        "training_rows": 11986,
+        "val_rows": 2568,
+        "test_rows": 2569,
+        "test_hash_unchanged": "985e08d21524",
+        "precision": 0.9255,
+        "recall": 0.8371,
+        "f1": 0.8791,
+        "pr_auc": 0.9255,
+        "roc_auc": 0.9929,
+        "fpr": 0.005019,
+        "brier": 0.0138,
+        "tp": 149,
+        "fp": 12,
+        "tn": 2379,
+        "fn": 29
+      },
+      {
+        "seed": 123,
+        "training_data_hash": "2edbce5c42a9",
+        "training_rows": 11841,
+        "val_rows": 2538,
+        "test_rows": 2569,
+        "test_hash_unchanged": "985e08d21524",
+        "precision": 0.9222,
+        "recall": 0.8652,
+        "f1": 0.8928,
+        "pr_auc": 0.9382,
+        "roc_auc": 0.9937,
+        "fpr": 0.005437,
+        "brier": 0.0124,
+        "tp": 154,
+        "fp": 13,
+        "tn": 2378,
+        "fn": 24
+      },
+      {
+        "seed": 2024,
+        "training_data_hash": "ffe516e00de0",
+        "training_rows": 12062,
+        "val_rows": 2585,
+        "test_rows": 2569,
+        "test_hash_unchanged": "985e08d21524",
+        "precision": 0.9548,
+        "recall": 0.8315,
+        "f1": 0.8889,
+        "pr_auc": 0.9343,
+        "roc_auc": 0.994,
+        "fpr": 0.002928,
+        "brier": 0.0127,
+        "tp": 148,
+        "fp": 7,
+        "tn": 2384,
+        "fn": 30
+      },
+      {
+        "seed": 2025,
+        "training_data_hash": "927cd169e964",
+        "training_rows": 12005,
+        "val_rows": 2572,
+        "test_rows": 2569,
+        "test_hash_unchanged": "985e08d21524",
+        "precision": 0.9313,
+        "recall": 0.8371,
+        "f1": 0.8817,
+        "pr_auc": 0.9294,
+        "roc_auc": 0.9938,
+        "fpr": 0.004601,
+        "brier": 0.0138,
+        "tp": 149,
+        "fp": 11,
+        "tn": 2380,
+        "fn": 29
+      },
+      {
+        "seed": 777,
+        "training_data_hash": "4242e5a78423",
+        "training_rows": 12145,
+        "val_rows": 2602,
+        "test_rows": 2569,
+        "test_hash_unchanged": "985e08d21524",
+        "precision": 0.9427,
+        "recall": 0.8315,
+        "f1": 0.8836,
+        "pr_auc": 0.9344,
+        "roc_auc": 0.9932,
+        "fpr": 0.003764,
+        "brier": 0.0129,
+        "tp": 148,
+        "fp": 9,
+        "tn": 2382,
+        "fn": 30
+      }
+    ]
+  },
+  "dataset": {
+    "issues": [
+      "total_transactions: MISMATCH: actual=17123, reported=MISSING",
+      "legitimate_count: MISMATCH: actual=16276, reported=MISSING",
+      "fraud_count: MISMATCH: actual=847, reported=MISSING",
+      "fraud_rate: MISMATCH: actual=0.0495, reported=MISSING",
+      "unique_customers: MISMATCH: actual=600, reported=MISSING",
+      "unique_merchants: MISMATCH: actual=183, reported=MISSING",
+      "unique_devices: MISMATCH: actual=1900, reported=MISSING",
+      "start_date: MISMATCH: actual=2026-01-01, reported=MISSING",
+      "end_date: MISMATCH: actual=2026-02-14, reported=MISSING"
+    ],
+    "actual": {
+      "total_transactions": 17123,
+      "legitimate_count": 16276,
+      "fraud_count": 847,
+      "fraud_rate": 0.0495,
+      "unique_customers": 600,
+      "unique_merchants": 183,
+      "unique_devices": 1900,
+      "start_date": "2026-01-01",
+      "end_date": "2026-02-14"
+    }
+  },
+  "counterfactuals": [
+    {
+      "perturbation": "A. Amount Reduction ($14,500->$45)",
+      "base_prob": 0.9513,
+      "perturbed_prob": 0.9691,
+      "delta_prob": 0.0178,
+      "base_risk": 91.48,
+      "perturbed_risk": 90.59,
+      "delta_risk": -0.89,
+      "base_anom": 0.6834,
+      "perturbed_anom": 0.5989,
+      "base_beh": 1.0,
+      "perturbed_beh": 1.0,
+      "classification": "NONLINEAR_EXPLAINABLE"
+    },
+    {
+      "perturbation": "B. Velocity Reduction (5->0)",
+      "base_prob": 0.9513,
+      "perturbed_prob": 0.9743,
+      "delta_prob": 0.023,
+      "base_risk": 91.48,
+      "perturbed_risk": 90.76,
+      "delta_risk": -0.72,
+      "base_anom": 0.6834,
+      "perturbed_anom": 0.5959,
+      "base_beh": 1.0,
+      "perturbed_beh": 1.0,
+      "classification": "NONLINEAR_EXPLAINABLE"
+    },
+    {
+      "perturbation": "C. Known Device (new->known)",
+      "base_prob": 0.9513,
+      "perturbed_prob": 0.9532,
+      "delta_prob": 0.0019,
+      "base_risk": 91.48,
+      "perturbed_risk": 91.43,
+      "delta_risk": -0.05,
+      "base_anom": 0.6834,
+      "perturbed_anom": 0.6768,
+      "base_beh": 1.0,
+      "perturbed_beh": 1.0,
+      "classification": "NONLINEAR_EXPLAINABLE"
+    },
+    {
+      "perturbation": "D. Known Merchant (new->known)",
+      "base_prob": 0.9513,
+      "perturbed_prob": 0.9513,
+      "delta_prob": 0.0,
+      "base_risk": 91.48,
+      "perturbed_risk": 91.81,
+      "delta_risk": 0.33,
+      "base_anom": 0.6834,
+      "perturbed_anom": 0.7,
+      "base_beh": 1.0,
+      "perturbed_beh": 1.0,
+      "classification": "NONLINEAR_EXPLAINABLE"
+    },
+    {
+      "perturbation": "E. Home Location (foreign->home)",
+      "base_prob": 0.9513,
+      "perturbed_prob": 0.974,
+      "delta_prob": 0.0228,
+      "base_risk": 91.48,
+      "perturbed_risk": 92.33,
+      "delta_risk": 0.85,
+      "base_anom": 0.6834,
+      "perturbed_anom": 0.6747,
+      "base_beh": 1.0,
+      "perturbed_beh": 1.0,
+      "classification": "NONLINEAR_EXPLAINABLE"
+    },
+    {
+      "perturbation": "F. Card Present (wire->card)",
+      "base_prob": 0.9513,
+      "perturbed_prob": 0.0019,
+      "delta_prob": -0.9494,
+      "base_risk": 91.48,
+      "perturbed_risk": 48.63,
+      "delta_risk": -42.84,
+      "base_anom": 0.6834,
+      "perturbed_anom": 0.6773,
+      "base_beh": 1.0,
+      "perturbed_beh": 1.0,
+      "classification": "EXPECTED"
+    },
+    {
+      "perturbation": "G. Normal Hours (3am->2pm)",
+      "base_prob": 0.9513,
+      "perturbed_prob": 0.9691,
+      "delta_prob": 0.0178,
+      "base_risk": 91.48,
+      "perturbed_risk": 92.16,
+      "delta_risk": 0.69,
+      "base_anom": 0.6834,
+      "perturbed_anom": 0.6778,
+      "base_beh": 1.0,
+      "perturbed_beh": 1.0,
+      "classification": "NONLINEAR_EXPLAINABLE"
+    },
+    {
+      "perturbation": "H. Fully Benign (all normal)",
+      "base_prob": 0.9513,
+      "perturbed_prob": 0.0014,
+      "delta_prob": -0.9498,
+      "base_risk": 91.48,
+      "perturbed_risk": 10.53,
+      "delta_risk": -80.95,
+      "base_anom": 0.6834,
+      "perturbed_anom": 0.5233,
+      "base_beh": 1.0,
+      "perturbed_beh": 0.0,
+      "classification": "EXPECTED"
+    }
+  ],
+  "domain_shift": {
+    "Domain_A_Standard": {
+      "samples": 5137,
+      "fraud_count": 276,
+      "fraud_rate": 0.0537,
+      "precision": 0.9291,
+      "recall": 0.9022,
+      "f1": 0.9154,
+      "pr_auc": 0.9542,
+      "roc_auc": 0.9967,
+      "fpr": 0.0039,
+      "specificity": 0.9961,
+      "brier_score": 0.0079,
+      "prediction_mean": 0.0548,
+      "drift_status": "LOW_DRIFT",
+      "high_drift_features": [],
+      "moderate_drift_features": []
+    },
+    "Domain_B_HighVelocity": {
+      "samples": 5137,
+      "fraud_count": 245,
+      "fraud_rate": 0.0477,
+      "precision": 0.4963,
+      "recall": 0.8245,
+      "f1": 0.6196,
+      "pr_auc": 0.7796,
+      "roc_auc": 0.9796,
+      "fpr": 0.0419,
+      "specificity": 0.9581,
+      "brier_score": 0.0368,
+      "prediction_mean": 0.0758,
+      "drift_status": "HIGH_DRIFT",
+      "high_drift_features": [
+        "amount",
+        "transaction_velocity_24h",
+        "amount_deviation_ratio"
+      ],
+      "moderate_drift_features": []
+    },
+    "Domain_C_CrossBorderWire": {
+      "samples": 5137,
+      "fraud_count": 261,
+      "fraud_rate": 0.0508,
+      "precision": 0.2801,
+      "recall": 0.6782,
+      "f1": 0.3964,
+      "pr_auc": 0.2819,
+      "roc_auc": 0.9155,
+      "fpr": 0.0933,
+      "specificity": 0.9067,
+      "brier_score": 0.0841,
+      "prediction_mean": 0.1224,
+      "drift_status": "HIGH_DRIFT",
+      "high_drift_features": [
+        "amount",
+        "transaction_type_encoded",
+        "hour_of_day",
+        "amount_deviation_ratio"
+      ],
+      "moderate_drift_features": []
+    },
+    "Domain_D_AccountTakeover": {
+      "samples": 5137,
+      "fraud_count": 241,
+      "fraud_rate": 0.0469,
+      "precision": 0.12,
+      "recall": 0.8797,
+      "f1": 0.2112,
+      "pr_auc": 0.6475,
+      "roc_auc": 0.899,
+      "fpr": 0.3176,
+      "specificity": 0.6824,
+      "brier_score": 0.255,
+      "prediction_mean": 0.3254,
+      "drift_status": "HIGH_DRIFT",
+      "high_drift_features": [],
+      "moderate_drift_features": []
+    },
+    "Domain_E_ExternalBenchmarkProxy": {
+      "samples": 5137,
+      "fraud_count": 242,
+      "fraud_rate": 0.0471,
+      "precision": 0.9441,
+      "recall": 0.6281,
+      "f1": 0.7543,
+      "pr_auc": 0.753,
+      "roc_auc": 0.9417,
+      "fpr": 0.0018,
+      "specificity": 0.9982,
+      "brier_score": 0.0183,
+      "prediction_mean": 0.0329,
+      "drift_status": "LOW_DRIFT",
+      "high_drift_features": [],
+      "moderate_drift_features": []
+    }
+  },
+  "drift": {
+    "status": "PASS WITH LIMITATION - edge cases handled; drift != model degradation properly noted"
+  }
+}

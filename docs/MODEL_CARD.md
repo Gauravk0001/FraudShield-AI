@@ -1,9 +1,18 @@
 # FraudShield AI — Model Card v2.0.0-forensic
 
-> **⚠️ Operational Classification**  
+> **Operational Classification**  
 > FraudShield AI is a **decision-support and triage system**. It does not automatically block transactions. It does not guarantee fraud detection. Human analysts retain final decision authority over all high-stakes actions.
 
+> [!IMPORTANT]
+> **Terminology Used Throughout This Card**
+> - **[DEMONSTRATED]** — Empirically measured by running code against data. The result is reproducible.
+> - **[ASSUMED]** — Based on domain knowledge or design intent, but not empirically verified with current data.
+> - **[NOT YET VERIFIED]** — Would require additional real-world data or experiments not yet conducted.
+> 
+> No claim in this document uses "production-ready", "validated in production", or "production-grade" unless backed by actual production deployment evidence. All evaluations are on synthetic data.
+
 ---
+
 
 ## 1. Model Purpose
 

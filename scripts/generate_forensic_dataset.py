@@ -48,9 +48,6 @@ class CausalEntityTracker:
         location: str,
         customer_benchmark_avg: float
     ) -> Dict[str, float]:
-        """
-        Calculates features strictly from past transactions (prior to current_time).
-        """
         history = self.customer_history.get(customer_id, [])
 
         one_hour_ago = current_time - timedelta(hours=1)
@@ -118,9 +115,6 @@ class CausalEntityTracker:
         merchant_id: str,
         location: str
     ):
-        """
-        Appends transaction to history after feature extraction at t.
-        """
         if customer_id not in self.customer_history:
             self.customer_history[customer_id] = []
         self.customer_history[customer_id].append({
@@ -138,10 +132,6 @@ def generate_causal_synthetic_dataset(
     days: int = 45,
     seed: int = 42
 ) -> pd.DataFrame:
-    """
-    Generates a causal financial dataset with realistic overlapping distributions,
-    hard negatives, and realistic fraud topologies.
-    """
     np.random.seed(seed)
 
     start_date = datetime(2026, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
@@ -178,6 +168,13 @@ def generate_causal_synthetic_dataset(
 
     # 2. Plan chronological legitimate events
     events = []
+    hn_counts = {
+        "STANDARD": 0,
+        "TRAVELER_VIP": 0,
+        "HOLIDAY_BURST": 0,
+        "NEW_MERCHANT": 0,
+        "PHONE_UPGRADE": 0
+    }
 
     for cust in customers:
         c_id = cust["customer_id"]
@@ -194,6 +191,7 @@ def generate_causal_synthetic_dataset(
                 "NEW_MERCHANT",
                 "PHONE_UPGRADE"
             ], p=[0.74, 0.07, 0.06, 0.07, 0.06])
+            hn_counts[hn_type] += 1
 
             if hn_type == "TRAVELER_VIP" or cust["is_vip"]:
                 amt = float(np.random.uniform(750.0, 7500.0))
@@ -205,8 +203,8 @@ def generate_causal_synthetic_dataset(
                 loc = cust["home_city"]
                 dev = cust["primary_device"]
                 tx_type = "ONLINE_PAYMENT"
-                # Sometimes legitimate user has a second tx shortly after (holiday shopping)
                 if np.random.rand() < 0.3:
+                    hn_counts["HOLIDAY_BURST"] += 1
                     events.append({
                         "timestamp": tx_time + timedelta(minutes=int(np.random.randint(5, 45))),
                         "customer_id": c_id,
@@ -217,7 +215,8 @@ def generate_causal_synthetic_dataset(
                         "location": loc,
                         "customer_benchmark_avg": cust["base_avg"],
                         "is_fraud": 0,
-                        "fraud_topology": "LEGITIMATE_BURST"
+                        "fraud_topology": "LEGITIMATE_BURST",
+                        "hard_negative_type": "HOLIDAY_BURST"
                     })
             elif hn_type == "NEW_MERCHANT":
                 amt = float(np.random.exponential(scale=cust["base_avg"]) + 10.0)
@@ -248,7 +247,8 @@ def generate_causal_synthetic_dataset(
                 "location": loc,
                 "customer_benchmark_avg": cust["base_avg"],
                 "is_fraud": 0,
-                "fraud_topology": "LEGITIMATE"
+                "fraud_topology": "LEGITIMATE",
+                "hard_negative_type": hn_type
             })
 
     # 3. Inject Realistic Fraud Topologies (~5.2% target prevalence)
@@ -274,7 +274,6 @@ def generate_causal_synthetic_dataset(
         c_id = target["customer_id"]
         topo = np.random.choice(topo_names, p=topo_probs)
 
-        # Place fraud in latter 75% of timeline
         f_sec = np.random.uniform(days * 86400 * 0.25, days * 86400)
         f_time = start_date + timedelta(seconds=float(f_sec))
 
@@ -294,11 +293,11 @@ def generate_causal_synthetic_dataset(
                 "location": loc,
                 "customer_benchmark_avg": target["base_avg"],
                 "is_fraud": 1,
-                "fraud_topology": topo
+                "fraud_topology": topo,
+                "hard_negative_type": "NONE"
             })
 
         elif topo == "CARD_TESTING":
-            # Rapid micro transactions (burst of 2-4)
             burst_size = np.random.randint(2, 5)
             dev = f"dev_bot_{np.random.randint(100, 500)}"
             loc = np.random.choice(domestic_cities)
@@ -315,11 +314,11 @@ def generate_causal_synthetic_dataset(
                     "location": loc,
                     "customer_benchmark_avg": target["base_avg"],
                     "is_fraud": 1,
-                    "fraud_topology": topo
+                    "fraud_topology": topo,
+                    "hard_negative_type": "NONE"
                 })
 
         elif topo == "BOT_VELOCITY_ATTACK":
-            # Rapid burst of moderate transactions
             burst_size = np.random.randint(3, 6)
             dev = f"dev_botnet_{np.random.randint(500, 999)}"
             loc = target["home_city"] if np.random.rand() < 0.5 else np.random.choice(domestic_cities)
@@ -336,7 +335,8 @@ def generate_causal_synthetic_dataset(
                     "location": loc,
                     "customer_benchmark_avg": target["base_avg"],
                     "is_fraud": 1,
-                    "fraud_topology": topo
+                    "fraud_topology": topo,
+                    "hard_negative_type": "NONE"
                 })
 
         elif topo == "OFF_HOURS_WIRE":
@@ -356,7 +356,8 @@ def generate_causal_synthetic_dataset(
                 "location": loc,
                 "customer_benchmark_avg": target["base_avg"],
                 "is_fraud": 1,
-                "fraud_topology": topo
+                "fraud_topology": topo,
+                "hard_negative_type": "NONE"
             })
 
         elif topo == "MERCHANT_ABUSE":
@@ -374,7 +375,8 @@ def generate_causal_synthetic_dataset(
                 "location": loc,
                 "customer_benchmark_avg": target["base_avg"],
                 "is_fraud": 1,
-                "fraud_topology": topo
+                "fraud_topology": topo,
+                "hard_negative_type": "NONE"
             })
 
         else: # DEVICE_TAKEOVER_STEALTH
@@ -392,7 +394,8 @@ def generate_causal_synthetic_dataset(
                 "location": loc,
                 "customer_benchmark_avg": target["base_avg"],
                 "is_fraud": 1,
-                "fraud_topology": topo
+                "fraud_topology": topo,
+                "hard_negative_type": "NONE"
             })
 
     all_events = events + fraud_events
@@ -413,7 +416,6 @@ def generate_causal_synthetic_dataset(
         loc = event["location"]
         bench_avg = event["customer_benchmark_avg"]
 
-        # Extract features using ONLY history before t
         feats = tracker.extract_features_at_time(
             customer_id=c_id,
             amount=amt,
@@ -433,12 +435,12 @@ def generate_causal_synthetic_dataset(
             "location": loc,
             "transaction_type": tx_type,
             "is_fraud": event["is_fraud"],
-            "fraud_topology": event["fraud_topology"]
+            "fraud_topology": event["fraud_topology"],
+            "hard_negative_type": event.get("hard_negative_type", "NONE")
         }
         record.update(feats)
         records.append(record)
 
-        # AFTER feature extraction, record transaction to history
         tracker.record_transaction(
             customer_id=c_id,
             amount=amt,
@@ -452,9 +454,6 @@ def generate_causal_synthetic_dataset(
     return df
 
 def verify_causality_and_leakage(df: pd.DataFrame) -> Dict[str, Any]:
-    """
-    Automated diagnostics verifying no target leakage or future leakage.
-    """
     results = {
         "total_records": len(df),
         "fraud_count": int(df["is_fraud"].sum()),
@@ -475,15 +474,70 @@ def verify_causality_and_leakage(df: pd.DataFrame) -> Dict[str, Any]:
 
     return results
 
-if __name__ == "__main__":
-    print("Generating causal synthetic dataset...")
-    df = generate_causal_synthetic_dataset(n_customers=600, n_merchants=150, days=45, seed=42)
-    diag = verify_causality_and_leakage(df)
-    print("\nDataset Diagnostics:")
-    print(json.dumps(diag, indent=2))
+def generate_and_save_authoritative_dataset(seed: int = 42) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    df = generate_causal_synthetic_dataset(n_customers=600, n_merchants=150, days=45, seed=seed)
     
     out_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
     os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, "causal_transactions.parquet")
-    df.to_parquet(out_path)
-    print(f"\nSaved {len(df)} transactions to {out_path}")
+    parquet_path = os.path.join(out_dir, "causal_transactions.parquet")
+    df.to_parquet(parquet_path)
+
+    # Compute sha256
+    hasher = hashlib.sha256()
+    with open(parquet_path, "rb") as f:
+        hasher.update(f.read())
+    file_sha256 = hasher.hexdigest()
+
+    # Calculate authoritative metadata
+    total_tx = len(df)
+    n_fraud = int(df["is_fraud"].sum())
+    n_legit = total_tx - n_fraud
+    fraud_pct = round(float(n_fraud / total_tx * 100), 2)
+    
+    unique_custs = int(df["customer_id"].nunique())
+    unique_merchs = int(df["merchant_id"].nunique())
+    unique_devs = int(df["device_id"].nunique())
+
+    topo_counts = df[df["is_fraud"] == 1]["fraud_topology"].value_counts().to_dict()
+    topo_pcts = {k: round(float(v / n_fraud * 100), 2) for k, v in topo_counts.items()}
+
+    hn_counts = df[df["is_fraud"] == 0]["hard_negative_type"].value_counts().to_dict()
+
+    timestamps = pd.to_datetime(df["timestamp"])
+    start_ts = timestamps.min().isoformat()
+    end_ts = timestamps.max().isoformat()
+
+    metadata = {
+        "dataset_version": "v2.0.0-forensic",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "random_seed": seed,
+        "sha256_hash": file_sha256,
+        "transactions": total_tx,
+        "customers": unique_custs,
+        "merchants": unique_merchs,
+        "devices": unique_devs,
+        "days": 45,
+        "date_range": {
+            "start": start_ts,
+            "end": end_ts
+        },
+        "legitimate_transactions": n_legit,
+        "fraudulent_transactions": n_fraud,
+        "fraud_rate_pct": fraud_pct,
+        "fraud_topologies_counts": topo_counts,
+        "fraud_topologies_percentages": topo_pcts,
+        "hard_negatives_counts": hn_counts,
+        "feature_names": FEATURE_NAMES
+    }
+
+    meta_path = os.path.join(out_dir, "forensic_dataset_metadata.json")
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2)
+
+    print(f"Generated authoritative dataset with {total_tx:,} transactions.")
+    print(f"Saved to: {parquet_path}")
+    print(f"Metadata saved to: {meta_path}")
+    return df, metadata
+
+if __name__ == "__main__":
+    generate_and_save_authoritative_dataset(seed=42)

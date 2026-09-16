@@ -1,0 +1,15 @@
+{
+  "manifest_version": "2.0.0-forensic",
+  "description": "Cryptographically locked final untouched temporal test set (last 15% of chronological timeline)",
+  "dataset_source": "data/causal_transactions.parquet",
+  "temporal_slice": "Last 15% chronological",
+  "total_rows": 2569,
+  "legitimate_count": 2391,
+  "fraud_count": 178,
+  "fraud_rate": 0.0693,
+  "test_data_sha256": "985e08d215249e42edbbc71d57410f04e200ad876a2d55603d9ac21c01775a47",
+  "feature_schema_sha256": "3f52be4ae831f9c09d2ae7cd44531d16df0cc7f510d8c930e0129421c551229c",
+  "feature_count": 12,
+  "start_timestamp": "2026-02-08T06:27:20.400252+00:00",
+  "end_timestamp": "2026-02-14T23:51:54.385461+00:00"
+}

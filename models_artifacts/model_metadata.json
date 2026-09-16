@@ -1,0 +1,26 @@
+{
+  "version": "v1.0.0",
+  "model_type": "XGBoost",
+  "feature_names": [
+    "amount",
+    "transaction_type_encoded",
+    "hour_of_day",
+    "day_of_week",
+    "transaction_velocity_1h",
+    "transaction_velocity_24h",
+    "avg_amount_customer_30d",
+    "amount_deviation_ratio",
+    "time_since_last_transaction_seconds",
+    "is_new_device",
+    "is_new_merchant",
+    "location_changed"
+  ],
+  "training_timestamp": "2026-09-16T06:47:06.796329+00:00",
+  "metrics": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "roc_auc": 1.0
+  },
+  "dataset": "Synthetic Financial Fraud Dataset (5,000 samples, 5% imbalance ratio)"
+}

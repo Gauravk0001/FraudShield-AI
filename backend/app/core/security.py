@@ -42,6 +42,8 @@ def create_access_token(
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+import uuid
+
 def create_refresh_token(
     subject: Union[str, Any],
     expires_delta: Optional[timedelta] = None
@@ -54,6 +56,7 @@ def create_refresh_token(
     to_encode = {
         "sub": str(subject),
         "exp": expire,
+        "jti": str(uuid.uuid4()),
         "type": "refresh"
     }
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)

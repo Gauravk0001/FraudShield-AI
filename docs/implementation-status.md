@@ -11,13 +11,13 @@
 | FS-004 | — Implement User Authentication | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-005 | — Implement Role-Based Access Control | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-006 | — Implement Database Row-Level Security | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-007 | — Build Transaction Validation API | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-008 | — Implement Transaction Service | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-009 | — Implement Transaction Feature Engineering | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-010 | — Implement Supervised Fraud Classifier | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-011 | — Implement Isolation Forest Anomaly Detection | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-012 | — Build Fraud Risk Scoring Engine | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-013 | — Implement SHAP Explainability | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-007 (DONE) | — Build Transaction Validation API | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-008 (DONE) | — Implement Transaction Service | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-009 (DONE) | — Implement Transaction Feature Engineering | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-010 (DONE) | — Implement Supervised Fraud Classifier | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-011 (DONE) | — Implement Isolation Forest Anomaly Detection | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-012 (DONE) | — Build Fraud Risk Scoring Engine | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-013 (DONE) | — Implement SHAP Explainability | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-014 | — Implement Automatic Alert Creation | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-015 | — Build Alert API | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-016 | — Implement Redis Event Publishing | MUST-HAVE | NOT_STARTED | - | Initial state |

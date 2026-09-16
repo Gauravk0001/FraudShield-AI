@@ -55,8 +55,10 @@ def health_check(db: Session = Depends(get_db)):
         "version": "1.0.0"
     }
 
-from app.api.routes import auth
+from app.api.routes import auth, transactions
 
 # Mount routers
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Auth"])
+app.include_router(transactions.router, prefix=f"{settings.API_V1_STR}/transactions", tags=["Transactions"])
+
 

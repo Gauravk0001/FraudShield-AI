@@ -1,6 +1,7 @@
 {
-  "version": "v1.0.0",
-  "model_type": "XGBoost Classifier",
+  "version": "v2.0.0-forensic",
+  "model_type": "Calibrated XGBoost Classifier (Platt Sigmoid)",
+  "base_model": "XGBoost Classifier",
   "feature_names": [
     "amount",
     "transaction_type_encoded",
@@ -15,23 +16,34 @@
     "is_new_merchant",
     "location_changed"
   ],
-  "training_timestamp": "2026-09-16T08:12:38.777711+00:00",
-  "metrics": {
-    "accuracy": 1.0,
-    "precision": 1.0,
-    "recall": 1.0,
-    "f1_score": 1.0,
-    "roc_auc": 1.0,
-    "pr_auc": 1.0,
-    "fpr": 0.0,
-    "confusion_matrix": {
-      "TN": 1900,
-      "FP": 0,
-      "FN": 0,
-      "TP": 100
-    },
-    "mean_latency_ms": 8.502890400002798,
-    "train_time_ms": 134.86361503601074
+  "feature_count": 12,
+  "random_seed": 42,
+  "operating_threshold": 0.5,
+  "training_timestamp": "2026-09-16T08:40:43.126102+00:00",
+  "temporal_split": {
+    "train_samples": 11986,
+    "val_samples": 2568,
+    "test_samples": 2569,
+    "fraud_prevalence_pct": 4.95
   },
-  "dataset": "Synthetic Financial Fraud Dataset (10,000 samples, 5.0% imbalance)"
+  "calibration": {
+    "method": "sigmoid",
+    "val_brier_uncalibrated": 0.013098725722363936,
+    "val_brier_calibrated": 0.009234163304064867
+  },
+  "metrics_on_untouched_temporal_test": {
+    "precision": 0.9254658385093167,
+    "recall": 0.8370786516853933,
+    "f1_score": 0.8790560471976401,
+    "pr_auc": 0.9219860079501107,
+    "roc_auc": 0.9927419771709454,
+    "fpr": 0.005018820577164366,
+    "brier_score": 0.014287948207273053,
+    "confusion_matrix": {
+      "TN": 2379,
+      "FP": 12,
+      "FN": 29,
+      "TP": 149
+    }
+  }
 }

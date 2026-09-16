@@ -1,6 +1,6 @@
 # Forensic Domain Generalization & Shift Robustness Report
 
-**Evaluation Timestamp:** 2026-09-16T09:17:37.420311+00:00  
+**Evaluation Timestamp:** 2026-09-16T17:32:55.389801+00:00  
 **Model Architecture:** Calibrated XGBoost Classifier (`Platt Sigmoid`)  
 **Decision Threshold:** $\tau = 0.35$  
 **Governance Standard:** Zero Data Fabrication & Real Empirical Degradation Logging  

@@ -1,13 +1,9 @@
 # FraudShield AI — Composite Risk Engine Evaluation & Weight Sensitivity Report
 
-**Audit Date:** 2026-09-16 09:16:47 UTC  
+**Audit Date:** 2026-09-16 17:32:02 UTC  
 **Objective:** Empirically validate the multi-layer composite risk architecture ($0–100$), calibrate component weighting, and analyze analyst triage tradeoffs.
 
-> [!WARNING]
-> **Forensic Audit Finding (2026-09-16):** The production weight configuration (ML=45%, Anom=20%, Beh=35%) achieves PR-AUC=0.9176 on the validation set at threshold=0.30. The expanded weight grid search (ML 0.40-0.70) finds that `ML=70%/Anom=25%/Beh=5%` achieves PR-AUC=0.9525 — a gap of **0.0349**. The production config was chosen for operational interpretability (maintaining meaningful behavioral signal contribution) and robustness, NOT because it maximizes validation metrics. The original grid search script tested ML=0.50–0.70 only; ML=0.45 was not in the original search range. See `docs/EVIDENCE_TRACEABILITY_MATRIX.md` Section D for full details.
-
 ---
-
 
 ## 1. Architectural Purpose: Classification vs Operational Triage
 

@@ -1,6 +1,6 @@
 # FraudShield AI — Probability Calibration & Selection Report
 
-**Audit Date:** 2026-09-16 09:16:51 UTC  
+**Audit Date:** 2026-09-16 17:32:08 UTC  
 **Dataset Split:** Chronological Validation Partition (2,568 samples, 183 fraud events)  
 **Untouched Final Test Data:** Preserved without participating in calibration parameter estimation.
 

@@ -1,6 +1,6 @@
 # FraudShield AI — Multi-Seed Stability & Variance Report
 
-**Audit Date:** 2026-09-16 09:17:21 UTC  
+**Audit Date:** 2026-09-16 17:32:39 UTC  
 **Seeds Evaluated:** `[42, 123, 2024, 2025, 777]`  
 **Evaluation Protocol:** Seed-dependent data generation and model retraining evaluated on a **single fixed, untouched final test set** (2,569 samples).
 

@@ -1,6 +1,6 @@
 # FraudShield AI — Forensic Counterfactual & Nonlinearity Analysis
 
-**Audit Date:** 2026-09-16 09:17:30 UTC  
+**Audit Date:** 2026-09-16 17:32:48 UTC  
 **Framework:** Controlled Feature Perturbation + SHAP Delta Decomposition  
 **Baseline Suspicious Event:** Hero Account Takeover Transaction ($14,500 wire, 3 AM off-hours, new device, new merchant, foreign location, velocity = 5 tx/hr).  
 **Baseline Scores:** Fraud Probability = `0.9513`, Anomaly Score = `0.6834`, Composite Risk Score = `91.48` (CRITICAL).

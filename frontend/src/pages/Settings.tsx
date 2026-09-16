@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { CheckCircle2, Settings as SettingsIcon, ShieldAlert } from 'lucide-react';
 import { ApiError, apiRequest } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import type { User } from '../types';
 
 interface SystemSettings {
   organization_id: string;
@@ -23,6 +25,7 @@ interface SystemSettings {
 }
 
 export const SettingsPage: React.FC = () => {
+  const { user } = useOutletContext<{ user: User | null }>();
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [mediumThreshold, setMediumThreshold] = useState(30);
   const [highThreshold, setHighThreshold] = useState(70);
@@ -85,9 +88,11 @@ export const SettingsPage: React.FC = () => {
       <div>
         <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
           <SettingsIcon className="w-5 h-5 text-blue-600" />
-          System Settings
+          System Settings & Risk Configuration
         </h2>
-        <p className="text-xs text-slate-500 mt-0.5">Administrative risk-engine configuration and service diagnostics.</p>
+        <p className="text-xs text-slate-500 mt-0.5">
+          {user?.role === 'RISK_MANAGER' ? 'Risk Manager threshold configuration & model operational settings.' : 'Administrative risk-engine configuration and service diagnostics.'}
+        </p>
       </div>
 
       {loading ? (
@@ -96,8 +101,10 @@ export const SettingsPage: React.FC = () => {
         <Card>
           <div className="py-6 text-center text-slate-700">
             <ShieldAlert className="w-8 h-8 mx-auto mb-3 text-amber-500" />
-            <p className="font-semibold">Administrator access is required</p>
-            <p className="text-sm text-slate-500 mt-1">Your account can continue to use its authorized operational pages.</p>
+            <p className="font-semibold">Administrator or Risk Manager access required</p>
+            <p className="text-sm text-slate-500 mt-1">
+              Your role ({user?.role || 'FRAUD_ANALYST'}) does not have authorization to view or edit global system settings.
+            </p>
           </div>
         </Card>
       ) : error ? (

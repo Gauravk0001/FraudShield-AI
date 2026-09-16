@@ -38,11 +38,11 @@ class SystemSettingsUpdate(BaseModel):
 @router.get("", response_model=SystemSettingsResponse)
 def get_system_settings(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.ADMIN]))
+    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.RISK_MANAGER]))
 ):
     """
     GET /api/v1/settings
-    Returns platform settings and active operational configuration for administrative management.
+    Returns platform settings and active operational configuration for administrative and risk management.
     """
     org = db.query(Organization).filter(Organization.id == current_user.organization_id).first()
     org_name = org.name if org else "Default Organization"
@@ -69,7 +69,7 @@ def get_system_settings(
 def update_system_settings(
     settings_in: SystemSettingsUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.ADMIN]))
+    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.RISK_MANAGER]))
 ):
     """
     PATCH /api/v1/settings

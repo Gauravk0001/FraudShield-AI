@@ -4,26 +4,48 @@ import { copilotApi } from '../../services/copilotApi';
 import type { ChatMessage } from '../../services/copilotApi';
 import { Button } from '../ui/Button';
 
+import type { UserRole } from '../../types';
+
 interface CopilotChatProps {
   investigationId?: string;
   transactionId?: string;
+  userRole?: UserRole;
 }
 
-export const CopilotChat: React.FC<CopilotChatProps> = ({ investigationId, transactionId }) => {
+export const CopilotChat: React.FC<CopilotChatProps> = ({ investigationId, transactionId, userRole = 'FRAUD_ANALYST' }) => {
+  const getRoleFollowups = (role: UserRole) => {
+    if (role === 'RISK_MANAGER') {
+      return [
+        'Summarize current fraud risk trends',
+        'Explain alert volume changes',
+        'Summarize investigation backlog',
+        'Explain model performance metrics'
+      ];
+    }
+    return [
+      'Why was this transaction flagged?',
+      'Summarize evidence',
+      'What should I investigate next?',
+      'Explain SHAP risk factors'
+    ];
+  };
+
+  const getRoleGreeting = (role: UserRole) => {
+    if (role === 'RISK_MANAGER') {
+      return 'Hello Risk Manager. I am FraudShield Copilot. Ask me about overall fraud portfolio trends, model calibration metrics, or backlog aging.';
+    }
+    return 'Hello Analyst. I am FraudShield Copilot. Select a suggested prompt or ask me any question regarding transaction evidence, SHAP risk factors, or investigation recommendations.';
+  };
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: 'Hello Analyst. I am FraudShield Copilot. Select a suggested prompt or ask me any question regarding transaction evidence, SHAP risk factors, or investigation recommendations.'
+      content: getRoleGreeting(userRole)
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [suggestedFollowups, setSuggestedFollowups] = useState<string[]>([
-    'Explain this alert',
-    'Summarize evidence',
-    'What should I investigate next?',
-    'Show unusual behavior'
-  ]);
+  const [suggestedFollowups, setSuggestedFollowups] = useState<string[]>(getRoleFollowups(userRole));
   const [error, setError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -92,12 +114,22 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ investigationId, trans
         )}
       </div>
 
-      {/* Safety Disclaimer Banner */}
-      <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 flex items-center space-x-2 text-xs text-amber-800">
-        <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-        <span>
-          <strong>AI Safety Boundary:</strong> Copilot provides evidence decision-support only. Final fraud decision authority belongs to the human analyst.
-        </span>
+      {/* Safety & Responsibility Disclaimer Banner */}
+      <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-200 space-y-1.5 text-xs text-amber-900">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span className="font-bold">Decision Authority Boundary:</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[10px] font-bold">
+            <span className="px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded border border-blue-200">1. MODEL EVIDENCE</span>
+            <span className="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded border border-amber-200">2. AI INTERPRETATION</span>
+            <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded border border-emerald-200">3. HUMAN DECISION</span>
+          </div>
+        </div>
+        <p className="text-[11px] text-amber-800">
+          Copilot provides evidence interpretation and assistant suggestions only. Final fraud decision authority rests strictly with authorized human personnel.
+        </p>
       </div>
 
       {/* Messages Feed */}

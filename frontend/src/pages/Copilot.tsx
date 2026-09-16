@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Sparkles, Search } from 'lucide-react';
 import { CopilotChat } from '../components/copilot/CopilotChat';
+import type { User } from '../types';
 
 export const CopilotPage: React.FC = () => {
+  const { user } = useOutletContext<{ user: User | null }>();
   const [targetTxId, setTargetTxId] = useState('');
   const [activeTxId, setActiveTxId] = useState<string | undefined>(undefined);
 
@@ -49,7 +52,7 @@ export const CopilotPage: React.FC = () => {
 
       {/* Main Chat Container */}
       <div className="flex-1 min-h-0">
-        <CopilotChat transactionId={activeTxId} />
+        <CopilotChat transactionId={activeTxId} userRole={user?.role} />
       </div>
     </div>
   );

@@ -104,7 +104,7 @@ def test_alerts_endpoint_returns_pipeline_alerts_for_the_current_organization():
     assert any(alert["transaction_id"] == created.json()["id"] for alert in alerts)
 
 
-def test_settings_route_resolves_for_admin_and_enforces_authentication_and_rbac():
+def test_settings_route_resolves_for_admin_and_risk_manager_and_enforces_rbac():
     assert client.get("/api/v1/settings").status_code == 401
 
     _, admin_headers = register_and_login("ADMIN", "settings_admin@test.com", "Settings Test Bank")
@@ -117,6 +117,13 @@ def test_settings_route_resolves_for_admin_and_enforces_authentication_and_rbac(
         "session_expire_minutes",
         "gemini_api_key_configured",
     }.issubset(admin_response.json())
+
+    _, manager_headers = register_and_login("RISK_MANAGER", "settings_manager@test.com", "Settings Test Bank")
+    manager_response = client.get("/api/v1/settings", headers=manager_headers)
+    assert manager_response.status_code == 200, manager_response.text
+
+    _, analyst_headers = register_and_login("FRAUD_ANALYST", "settings_analyst@test.com", "Settings Test Bank")
+    assert client.get("/api/v1/settings", headers=analyst_headers).status_code == 403
 
     _, viewer_headers = register_and_login("VIEWER", "settings_viewer@test.com", "Settings Test Bank")
     assert client.get("/api/v1/settings", headers=viewer_headers).status_code == 403

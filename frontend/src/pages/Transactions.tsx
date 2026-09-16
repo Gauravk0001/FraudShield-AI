@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Filter, RefreshCw, X } from 'lucide-react';
+import { useOutletContext } from 'react-router-dom';
+import { Search, Filter, RefreshCw, X, ShieldAlert, BarChart2 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { RiskBadge } from '../components/ui/RiskBadge';
 import { Button } from '../components/ui/Button';
 import { apiRequest } from '../services/api';
-import type { Transaction } from '../types';
+import type { Transaction, User } from '../types';
 
 export const Transactions: React.FC = () => {
+  const { user } = useOutletContext<{ user: User | null }>();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,18 +46,40 @@ export const Transactions: React.FC = () => {
     );
   });
 
+  const highRiskCount = transactions.filter(t => t.risk_score && t.risk_score.risk_score >= 70).length;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Transaction Intelligence</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Real-time evaluated transactions with ML probability & SHAP signals</p>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            {user?.role === 'RISK_MANAGER' ? <BarChart2 className="w-5 h-5 text-purple-600" /> : <ShieldAlert className="w-5 h-5 text-blue-600" />}
+            {user?.role === 'RISK_MANAGER' ? 'Transaction Risk Patterns & Exposure' : 'Transaction Intelligence & Triage'}
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {user?.role === 'RISK_MANAGER'
+              ? 'Portfolio transaction risk distribution, high-risk pattern monitoring, and exposure streams.'
+              : 'Real-time evaluated transactions with ML probability & SHAP risk factor attributions.'}
+          </p>
         </div>
         <Button variant="outline" size="sm" onClick={fetchTransactions} isLoading={isLoading}>
           <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
           Refresh
         </Button>
       </div>
+
+      {/* Role-Specific Banner */}
+      {user?.role === 'RISK_MANAGER' ? (
+        <div className="p-4 bg-purple-50 border border-purple-200 rounded-card flex items-center justify-between text-xs text-purple-950">
+          <div className="flex items-center gap-3">
+            <span className="font-bold text-purple-900 uppercase">Risk Manager Context:</span>
+            <span>Total Loaded: <strong>{transactions.length}</strong></span>
+            <span>•</span>
+            <span>High/Critical Flagged: <strong className="text-purple-700">{highRiskCount}</strong></span>
+          </div>
+          <span className="font-semibold text-purple-700">Portfolio Exposure Monitoring Active</span>
+        </div>
+      ) : null}
 
       {/* Filter Bar */}
       <Card className="!p-4">

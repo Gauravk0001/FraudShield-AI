@@ -11,11 +11,19 @@ test_db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..
 os.environ["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{test_db_path}"
 
 import pytest
-from app.core.database import Base, engine
+from app.core.database import Base, engine, SessionLocal
 
 @pytest.fixture(autouse=True)
 def reset_db():
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     yield
+
+@pytest.fixture
+def db_session():
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
 

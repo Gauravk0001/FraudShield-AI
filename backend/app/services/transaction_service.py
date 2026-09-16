@@ -92,6 +92,15 @@ def process_transaction_pipeline(
     )
     db.add(explanation_obj)
 
+    # 9. Trigger automatic Alert evaluation
+    from app.services.alert_service import evaluate_and_create_alert
+    evaluate_and_create_alert(
+        db=db,
+        transaction=new_tx,
+        risk_score_obj=risk_obj,
+        top_factors=top_factors
+    )
+
     # Update Transaction status
     new_tx.status = TransactionStatus.FLAGGED if risk_level in [RiskLevel.HIGH, RiskLevel.CRITICAL] else TransactionStatus.PROCESSED
     db.commit()

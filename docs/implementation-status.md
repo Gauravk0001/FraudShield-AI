@@ -18,10 +18,10 @@
 | FS-011 (DONE) | — Implement Isolation Forest Anomaly Detection | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-012 (DONE) | — Build Fraud Risk Scoring Engine | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-013 (DONE) | — Implement SHAP Explainability | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-014 | — Implement Automatic Alert Creation | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-015 | — Build Alert API | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-016 | — Implement Redis Event Publishing | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-017 | — Implement WebSocket Alert Stream | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-014 (DONE) | — Implement Automatic Alert Creation | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-015 (DONE) | — Build Alert API | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-016 (DONE) | — Implement Redis Event Publishing | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-017 (DONE) | — Implement WebSocket Alert Stream | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-018 (DONE) | — Build Frontend Design System | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-019 | — Build Login Experience | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-020 | — Build Main Application Layout | MUST-HAVE | NOT_STARTED | - | Initial state |
@@ -37,8 +37,8 @@
 | FS-030 | — Implement Audit Logging | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-031 | — Build Audit Log Viewer | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-032 | — Implement Model Version Tracking | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-033 | — Implement WebSocket Alert Client | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-034 | — Build Real-Time Alert Notification UI | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-033 (DONE) | — Implement WebSocket Alert Client | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-034 (DONE) | — Build Real-Time Alert Notification UI | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-035 | — Build Real-Time Transaction Simulator | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-036 | — Implement Global Backend Error Handling | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-037 | — Implement Frontend API Error Handling | MUST-HAVE | NOT_STARTED | - | Initial state |

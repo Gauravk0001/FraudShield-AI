@@ -5,194 +5,205 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timezone
 from sklearn.ensemble import IsolationForest, RandomForestClassifier
-try:
-    import xgboost as xgb
-    USE_XGB = True
-except ImportError:
-    USE_XGB = False
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import (
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    average_precision_score,
+    brier_score_loss
+)
+import xgboost as xgb
+
+from generate_forensic_dataset import (
+    generate_causal_synthetic_dataset,
+    FEATURE_NAMES,
+    verify_causality_and_leakage
+)
 
 ARTIFACTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models_artifacts")
 os.makedirs(ARTIFACTS_DIR, exist_ok=True)
 
-FEATURE_NAMES = [
-    "amount",
-    "transaction_type_encoded",
-    "hour_of_day",
-    "day_of_week",
-    "transaction_velocity_1h",
-    "transaction_velocity_24h",
-    "avg_amount_customer_30d",
-    "amount_deviation_ratio",
-    "time_since_last_transaction_seconds",
-    "is_new_device",
-    "is_new_merchant",
-    "location_changed"
-]
-
-def generate_synthetic_fraud_dataset(n_samples=5000):
-    np.random.seed(42)
+def train_and_save_production_pipeline(seed: int = 42) -> dict:
+    """
+    Trains the production XGBoost classifier and Isolation Forest using strictly causal temporal partitioning.
+    Uses:
+      - 70% historical for training
+      - 15% chronological validation for probability calibration (Platt/Sigmoid) & threshold selection
+      - 15% held-out chronological final test (untouched during tuning)
+    """
+    print(f"=== Generating Causal Dataset for Training (Seed: {seed}) ===")
+    df = generate_causal_synthetic_dataset(n_customers=600, n_merchants=150, days=45, seed=seed)
     
-    # 95% Normal, 5% Fraud
-    n_fraud = int(n_samples * 0.05)
-    n_normal = n_samples - n_fraud
-    
-    # Normal transactions
-    normal_data = {
-        "amount": np.random.exponential(scale=50.0, size=n_normal),
-        "transaction_type_encoded": np.random.choice([0, 1, 2], size=n_normal, p=[0.7, 0.2, 0.1]),
-        "hour_of_day": np.random.randint(8, 22, size=n_normal),
-        "day_of_week": np.random.randint(0, 7, size=n_normal),
-        "transaction_velocity_1h": np.random.poisson(lam=0.5, size=n_normal),
-        "transaction_velocity_24h": np.random.poisson(lam=2.0, size=n_normal),
-        "avg_amount_customer_30d": np.random.exponential(scale=60.0, size=n_normal) + 10.0,
-        "time_since_last_transaction_seconds": np.random.exponential(scale=3600.0 * 12, size=n_normal) + 300,
-        "is_new_device": np.random.choice([0, 1], size=n_normal, p=[0.92, 0.08]),
-        "is_new_merchant": np.random.choice([0, 1], size=n_normal, p=[0.85, 0.15]),
-        "location_changed": np.random.choice([0, 1], size=n_normal, p=[0.90, 0.10]),
-        "is_fraud": 0
-    }
-    df_normal = pd.DataFrame(normal_data)
-    df_normal["amount_deviation_ratio"] = df_normal["amount"] / (df_normal["avg_amount_customer_30d"] + 1.0)
+    # Verify no leakage
+    leakage_diag = verify_causality_and_leakage(df)
+    if leakage_diag["target_leakage_detected"]:
+        raise ValueError(f"Target leakage detected in dataset: {leakage_diag}")
 
-    # Fraudulent transactions across realistic topologies:
-    # 1. Large Wire / Account Takeover (single large amount, novel device, foreign location)
-    # 2. High Velocity / Automated Card Testing (burst velocity, short intervals)
-    # 3. Mixed Multi-Vector Fraud
-    n_fraud_large = int(n_fraud * 0.45)
-    n_fraud_velocity = int(n_fraud * 0.35)
-    n_fraud_mixed = n_fraud - n_fraud_large - n_fraud_velocity
+    # Temporal split: 70% Train, 15% Validation/Calibration, 15% Final Test
+    n_total = len(df)
+    train_end = int(n_total * 0.70)
+    val_end = int(n_total * 0.85)
 
-    fraud_dfs = []
+    df_train = df.iloc[:train_end].copy()
+    df_val = df.iloc[train_end:val_end].copy()
+    df_test = df.iloc[val_end:].copy()
 
-    # Topology 1: Large Wire / Account Takeover
-    df_large = pd.DataFrame({
-        "amount": np.random.uniform(2500.0, 18000.0, size=n_fraud_large),
-        "transaction_type_encoded": np.random.choice([1, 2], size=n_fraud_large, p=[0.3, 0.7]),
-        "hour_of_day": np.random.choice([0, 1, 2, 3, 4, 22, 23], size=n_fraud_large),
-        "day_of_week": np.random.randint(0, 7, size=n_fraud_large),
-        "transaction_velocity_1h": np.random.poisson(lam=0.5, size=n_fraud_large),
-        "transaction_velocity_24h": np.random.poisson(lam=1.5, size=n_fraud_large),
-        "avg_amount_customer_30d": np.random.uniform(40.0, 120.0, size=n_fraud_large),
-        "time_since_last_transaction_seconds": np.random.exponential(scale=3600.0 * 24, size=n_fraud_large) + 3600,
-        "is_new_device": np.ones(n_fraud_large),
-        "is_new_merchant": np.random.choice([0, 1], size=n_fraud_large, p=[0.1, 0.9]),
-        "location_changed": np.random.choice([0, 1], size=n_fraud_large, p=[0.1, 0.9]),
-        "is_fraud": 1
-    })
-    df_large["amount_deviation_ratio"] = df_large["amount"] / (df_large["avg_amount_customer_30d"] + 1.0)
-    fraud_dfs.append(df_large)
+    X_train = df_train[FEATURE_NAMES]
+    y_train = df_train["is_fraud"]
 
-    # Topology 2: Velocity / Card Testing
-    df_velo = pd.DataFrame({
-        "amount": np.random.uniform(15.0, 350.0, size=n_fraud_velocity),
-        "transaction_type_encoded": np.random.choice([0, 1], size=n_fraud_velocity, p=[0.2, 0.8]),
-        "hour_of_day": np.random.randint(0, 24, size=n_fraud_velocity),
-        "day_of_week": np.random.randint(0, 7, size=n_fraud_velocity),
-        "transaction_velocity_1h": np.random.poisson(lam=5.0, size=n_fraud_velocity) + 3,
-        "transaction_velocity_24h": np.random.poisson(lam=15.0, size=n_fraud_velocity) + 8,
-        "avg_amount_customer_30d": np.random.uniform(30.0, 80.0, size=n_fraud_velocity),
-        "time_since_last_transaction_seconds": np.random.exponential(scale=45.0, size=n_fraud_velocity) + 5,
-        "is_new_device": np.random.choice([0, 1], size=n_fraud_velocity, p=[0.3, 0.7]),
-        "is_new_merchant": np.random.choice([0, 1], size=n_fraud_velocity, p=[0.2, 0.8]),
-        "location_changed": np.random.choice([0, 1], size=n_fraud_velocity, p=[0.4, 0.6]),
-        "is_fraud": 1
-    })
-    df_velo["amount_deviation_ratio"] = df_velo["amount"] / (df_velo["avg_amount_customer_30d"] + 1.0)
-    fraud_dfs.append(df_velo)
+    X_val = df_val[FEATURE_NAMES]
+    y_val = df_val["is_fraud"]
 
-    # Topology 3: Mixed High Velocity & High Amount
-    df_mixed = pd.DataFrame({
-        "amount": np.random.uniform(1500.0, 8000.0, size=n_fraud_mixed),
-        "transaction_type_encoded": np.random.choice([1, 2], size=n_fraud_mixed, p=[0.4, 0.6]),
-        "hour_of_day": np.random.choice([1, 2, 3, 4, 23], size=n_fraud_mixed),
-        "day_of_week": np.random.randint(0, 7, size=n_fraud_mixed),
-        "transaction_velocity_1h": np.random.poisson(lam=3.0, size=n_fraud_mixed) + 2,
-        "transaction_velocity_24h": np.random.poisson(lam=8.0, size=n_fraud_mixed) + 4,
-        "avg_amount_customer_30d": np.random.uniform(50.0, 100.0, size=n_fraud_mixed),
-        "time_since_last_transaction_seconds": np.random.exponential(scale=120.0, size=n_fraud_mixed) + 10,
-        "is_new_device": np.ones(n_fraud_mixed),
-        "is_new_merchant": np.ones(n_fraud_mixed),
-        "location_changed": np.ones(n_fraud_mixed),
-        "is_fraud": 1
-    })
-    df_mixed["amount_deviation_ratio"] = df_mixed["amount"] / (df_mixed["avg_amount_customer_30d"] + 1.0)
-    fraud_dfs.append(df_mixed)
+    X_test = df_test[FEATURE_NAMES]
+    y_test = df_test["is_fraud"]
 
-    df_fraud = pd.concat(fraud_dfs, ignore_index=True)
-    df = pd.concat([df_normal, df_fraud], ignore_index=True).sample(frac=1.0, random_state=42).reset_index(drop=True)
-    return df
+    print(f"Dataset Partitioning (Temporal):")
+    print(f"  Train:      {len(X_train)} samples (Fraud: {y_train.sum()} / {y_train.mean():.2%})")
+    print(f"  Validation: {len(X_val)} samples (Fraud: {y_val.sum()} / {y_val.mean():.2%})")
+    print(f"  Test:       {len(X_test)} samples (Fraud: {y_test.sum()} / {y_test.mean():.2%})")
 
-def train_and_save_models():
-    df = generate_synthetic_fraud_dataset(n_samples=5000)
-    X = df[FEATURE_NAMES]
-    y = df["is_fraud"]
+    # 1. Train Base XGBoost Classifier on Train split
+    # Calculate scale_pos_weight for imbalance
+    n_neg = int((y_train == 0).sum())
+    n_pos = int((y_train == 1).sum())
+    scale_pos = float(n_neg / max(1, n_pos))
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-
-    # 1. Supervised Fraud Classifier (XGBoost / RandomForest)
-    if USE_XGB:
-        clf = xgb.XGBClassifier(
-            n_estimators=100,
-            max_depth=4,
-            learning_rate=0.05,
-            random_state=42,
-            eval_metric="logloss"
-        )
-        model_name = "XGBoost"
-    else:
-        clf = RandomForestClassifier(n_estimators=100, max_depth=6, random_state=42)
-        model_name = "RandomForest"
-
-    clf.fit(X_train, y_train)
-
-    y_pred_proba = clf.predict_proba(X_test)[:, 1]
-    y_pred = (y_pred_proba >= 0.5).astype(int)
-
-    precision = float(precision_score(y_test, y_pred, zero_division=0))
-    recall = float(recall_score(y_test, y_pred, zero_division=0))
-    f1 = float(f1_score(y_test, y_pred, zero_division=0))
-    roc_auc = float(roc_auc_score(y_test, y_pred_proba))
-
-    # 2. Isolation Forest Anomaly Detector
-    iso_forest = IsolationForest(
-        n_estimators=100,
-        contamination=0.05,
-        random_state=42
+    base_xgb = xgb.XGBClassifier(
+        n_estimators=120,
+        max_depth=4,
+        learning_rate=0.05,
+        scale_pos_weight=min(scale_pos, 8.0), # Controlled weighting
+        subsample=0.85,
+        colsample_bytree=0.85,
+        random_state=seed,
+        eval_metric="logloss"
     )
-    # Train anomaly detector on normal samples
-    iso_forest.fit(X_train[y_train == 0])
+    base_xgb.fit(X_train, y_train)
+
+    # 2. Probability Calibration on Validation split (Platt Sigmoid Scaling)
+    # Calibrate base model on validation split
+    calibrated_clf = CalibratedClassifierCV(estimator=base_xgb, method='sigmoid', cv='prefit')
+    calibrated_clf.fit(X_val, y_val)
+
+    # 3. Validation Evaluation & Threshold Selection
+    val_raw_prob = base_xgb.predict_proba(X_val)[:, 1]
+    val_cal_prob = calibrated_clf.predict_proba(X_val)[:, 1]
+
+    brier_uncal = float(brier_score_loss(y_val, val_raw_prob))
+    brier_cal = float(brier_score_loss(y_val, val_cal_prob))
+    print(f"\nCalibration Results (Validation Set):")
+    print(f"  Brier Score (Uncalibrated): {brier_uncal:.4f}")
+    print(f"  Brier Score (Calibrated):   {brier_cal:.4f}")
+
+    # Threshold optimization on Validation split
+    best_f1 = 0.0
+    best_thresh = 0.50
+    thresh_table = []
+    for th in np.arange(0.05, 0.96, 0.05):
+        th = round(float(th), 2)
+        preds = (val_cal_prob >= th).astype(int)
+        p = float(precision_score(y_val, preds, zero_division=0))
+        r = float(recall_score(y_val, preds, zero_division=0))
+        f = float(f1_score(y_val, preds, zero_division=0))
+        thresh_table.append({"threshold": th, "precision": p, "recall": r, "f1": f})
+        if f > best_f1:
+            best_f1 = f
+            best_thresh = th
+
+    print(f"  Optimal Operating Threshold (from Validation F1): {best_thresh:.2f} (F1: {best_f1:.4f})")
+
+    # 4. Final Untouched Evaluation on Chronological Test Set
+    test_cal_prob = calibrated_clf.predict_proba(X_test)[:, 1]
+    test_preds = (test_cal_prob >= best_thresh).astype(int)
+
+    test_prec = float(precision_score(y_test, test_preds, zero_division=0))
+    test_rec = float(recall_score(y_test, test_preds, zero_division=0))
+    test_f1 = float(f1_score(y_test, test_preds, zero_division=0))
+    test_roc_auc = float(roc_auc_score(y_test, test_cal_prob))
+    test_pr_auc = float(average_precision_score(y_test, test_cal_prob))
+    test_brier = float(brier_score_loss(y_test, test_cal_prob))
+
+    # Confusion matrix
+    from sklearn.metrics import confusion_matrix
+    tn, fp, fn, tp = confusion_matrix(y_test, test_preds).ravel()
+    test_fpr = float(fp / (fp + tn)) if (fp + tn) > 0 else 0.0
+
+    print(f"\nFinal Untouched Temporal Test Set Metrics:")
+    print(f"  Precision: {test_prec:.4f}")
+    print(f"  Recall:    {test_rec:.4f}")
+    print(f"  F1-Score:  {test_f1:.4f}")
+    print(f"  PR-AUC:    {test_pr_auc:.4f}")
+    print(f"  ROC-AUC:   {test_roc_auc:.4f}")
+    print(f"  FPR:       {test_fpr:.4%}")
+    print(f"  Confusion Matrix: TN={tn}, FP={fp}, FN={fn}, TP={tp}")
+
+    # 5. Isolation Forest Anomaly Detector
+    iso = IsolationForest(n_estimators=100, contamination=0.05, random_state=seed)
+    iso.fit(X_train[y_train == 0])
 
     # Save artifacts
     clf_path = os.path.join(ARTIFACTS_DIR, "fraud_classifier.joblib")
     iso_path = os.path.join(ARTIFACTS_DIR, "isolation_forest.joblib")
+    base_xgb_path = os.path.join(ARTIFACTS_DIR, "base_xgboost.joblib")
     meta_path = os.path.join(ARTIFACTS_DIR, "model_metadata.json")
 
-    joblib.dump(clf, clf_path)
-    joblib.dump(iso_forest, iso_path)
+    # Save calibrated classifier as production model
+    joblib.dump(calibrated_clf, clf_path)
+    joblib.dump(base_xgb, base_xgb_path)
+    joblib.dump(iso, iso_path)
+
+    # Sync to backend/models_artifacts if directory exists
+    backend_artifacts = os.path.join(os.path.dirname(os.path.dirname(__file__)), "backend", "models_artifacts")
+    if os.path.exists(backend_artifacts):
+        joblib.dump(calibrated_clf, os.path.join(backend_artifacts, "fraud_classifier.joblib"))
+        joblib.dump(base_xgb, os.path.join(backend_artifacts, "base_xgboost.joblib"))
+        joblib.dump(iso, os.path.join(backend_artifacts, "isolation_forest.joblib"))
 
     metadata = {
-        "version": "v1.0.0",
-        "model_type": model_name,
+        "version": "v2.0.0-forensic",
+        "model_type": "Calibrated XGBoost Classifier (Platt Sigmoid)",
+        "base_model": "XGBoost Classifier",
         "feature_names": FEATURE_NAMES,
+        "feature_count": len(FEATURE_NAMES),
+        "random_seed": seed,
+        "operating_threshold": best_thresh,
         "training_timestamp": datetime.now(timezone.utc).isoformat(),
-        "metrics": {
-            "precision": precision,
-            "recall": recall,
-            "f1_score": f1,
-            "roc_auc": roc_auc
+        "temporal_split": {
+            "train_samples": len(X_train),
+            "val_samples": len(X_val),
+            "test_samples": len(X_test),
+            "fraud_prevalence_pct": round(float(df["is_fraud"].mean() * 100), 2)
         },
-        "dataset": "Synthetic Financial Fraud Dataset (5,000 samples, 5% imbalance ratio)"
+        "calibration": {
+            "method": "sigmoid",
+            "val_brier_uncalibrated": brier_uncal,
+            "val_brier_calibrated": brier_cal
+        },
+        "metrics_on_untouched_temporal_test": {
+            "precision": test_prec,
+            "recall": test_rec,
+            "f1_score": test_f1,
+            "pr_auc": test_pr_auc,
+            "roc_auc": test_roc_auc,
+            "fpr": test_fpr,
+            "brier_score": test_brier,
+            "confusion_matrix": {"TN": int(tn), "FP": int(fp), "FN": int(fn), "TP": int(tp)}
+        }
     }
 
-    with open(meta_path, "w") as f:
+    with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2)
 
-    print("Model training complete!")
-    print(f"Model Type: {model_name}")
-    print(f"Metrics: Precision={precision:.4f}, Recall={recall:.4f}, F1={f1:.4f}, ROC-AUC={roc_auc:.4f}")
-    print(f"Artifacts saved to {ARTIFACTS_DIR}")
+    if os.path.exists(backend_artifacts):
+        with open(os.path.join(backend_artifacts, "model_metadata.json"), "w", encoding="utf-8") as f:
+            json.dump(metadata, f, indent=2)
+
+    print(f"\n[OK] Production artifacts and metadata saved to {ARTIFACTS_DIR}")
+    return metadata
 
 if __name__ == "__main__":
-    train_and_save_models()
+    train_and_save_production_pipeline(seed=42)

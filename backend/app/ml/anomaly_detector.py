@@ -6,8 +6,20 @@ from typing import Dict, Tuple
 from app.core.logging import logger
 from app.ml.feature_engineering import FEATURE_NAMES
 
-ARTIFACTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "models_artifacts")
+def _find_artifacts_dir():
+    candidates = [
+        os.path.join(os.getcwd(), "models_artifacts"),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "models_artifacts"),
+        os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "models_artifacts")
+    ]
+    for c in candidates:
+        if os.path.exists(c) and os.path.exists(os.path.join(c, "isolation_forest.joblib")):
+            return c
+    return candidates[0]
+
+ARTIFACTS_DIR = _find_artifacts_dir()
 MODEL_PATH = os.path.join(ARTIFACTS_DIR, "isolation_forest.joblib")
+
 
 _iso_model_cache = None
 

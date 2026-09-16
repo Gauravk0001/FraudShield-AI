@@ -14,22 +14,24 @@ def calculate_risk_score(
     # Behavioral signal detection
     if features_dict.get("is_new_device", 0) > 0:
         behavioral_flags["new_device"] = True
-        behavioral_boost += 0.3
+        behavioral_boost += 0.35
     
     if features_dict.get("is_new_merchant", 0) > 0:
         behavioral_flags["new_merchant"] = True
-        behavioral_boost += 0.2
+        behavioral_boost += 0.25
 
     if features_dict.get("transaction_velocity_1h", 0) >= 3:
         behavioral_flags["high_velocity_1h"] = True
-        behavioral_boost += 0.3
+        behavioral_boost += 0.35
 
-    if features_dict.get("amount_deviation_ratio", 1.0) >= 3.0:
-        behavioral_flags["extreme_amount_dev"] = True
-        behavioral_boost += 0.2
+    if features_dict.get("amount_deviation_ratio", 1.0) >= 3.0 or features_dict.get("amount", 0) >= 5000.0:
+        behavioral_flags["high_amount_deviation"] = True
+        behavioral_boost += 0.50
 
-    # Deterministic risk calculation: Fraud model 60%, Anomaly 30%, Behavioral 10%
-    raw_risk = (fraud_probability * 60.0) + (anomaly_score * 30.0) + (min(behavioral_boost, 1.0) * 10.0)
+    # Deterministic risk calculation: Fraud model 40%, Anomaly 20%, Behavioral signals 40%
+    raw_risk = (fraud_probability * 40.0) + (anomaly_score * 20.0) + (min(behavioral_boost, 1.0) * 40.0)
+
+
     risk_score = round(float(min(100.0, max(0.0, raw_risk))), 2)
 
     # Determine risk level based on configurable thresholds

@@ -54,8 +54,11 @@ export const NotificationCenter: React.FC = () => {
 
     let socket: WebSocket | null = null;
     let reconnectTimeout: number | undefined;
+    let retryCount = 0;
+    let isDisposed = false;
 
     const connectWs = () => {
+      if (isDisposed) return;
       try {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         // In local development, backend runs on port 8000
@@ -66,10 +69,14 @@ export const NotificationCenter: React.FC = () => {
         wsRef.current = socket;
 
         socket.onopen = () => {
-          setIsConnected(true);
+          if (!isDisposed) {
+            setIsConnected(true);
+            retryCount = 0; // Reset backoff upon successful connection
+          }
         };
 
         socket.onmessage = (event) => {
+          if (isDisposed) return;
           try {
             const data = JSON.parse(event.data);
             // Expected payload from alert_service WebSocket broadcast
@@ -85,32 +92,46 @@ export const NotificationCenter: React.FC = () => {
                 read: false,
               };
 
-              setNotifications((prev) => [newNotif, ...prev.slice(0, 19)]);
+              // Strictly enforce maximum 25 items to prevent unbounded memory growth
+              setNotifications((prev) => [newNotif, ...prev.slice(0, 24)]);
             }
           } catch {
-            // Heartbeat or plain text
+            // Heartbeat or plain text ping
           }
         };
 
         socket.onclose = () => {
+          if (isDisposed) return;
           setIsConnected(false);
-          // Auto-reconnect after 4 seconds
-          reconnectTimeout = window.setTimeout(connectWs, 4000);
+          // Exponential backoff: 2s, 4s, 8s, up to max 16s
+          const backoffDelay = Math.min(2000 * Math.pow(2, retryCount), 16000);
+          retryCount++;
+          reconnectTimeout = window.setTimeout(connectWs, backoffDelay);
         };
 
         socket.onerror = () => {
-          setIsConnected(false);
+          if (!isDisposed) setIsConnected(false);
         };
       } catch {
-        setIsConnected(false);
+        if (!isDisposed) {
+          setIsConnected(false);
+          const backoffDelay = Math.min(2000 * Math.pow(2, retryCount), 16000);
+          retryCount++;
+          reconnectTimeout = window.setTimeout(connectWs, backoffDelay);
+        }
       }
     };
 
     connectWs();
 
     return () => {
-      if (socket) socket.close();
+      isDisposed = true;
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (socket) {
+        socket.onclose = null;
+        socket.onerror = null;
+        socket.close();
+      }
     };
   }, []);
 

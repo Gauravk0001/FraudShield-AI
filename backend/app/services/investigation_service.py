@@ -131,6 +131,16 @@ def add_investigation_note(
     db.commit()
     db.refresh(note)
 
+    log_audit_event(
+        db=db,
+        action="INVESTIGATION_NOTE_ADDED",
+        entity_type="INVESTIGATION",
+        organization_id=user.organization_id,
+        user_id=user.id,
+        entity_id=inv.id,
+        details={"note_id": note.id, "note_length": len(note.note_text)}
+    )
+
     return note
 
 def resolve_investigation_with_decision(

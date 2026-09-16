@@ -1,10 +1,12 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+import uuid
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.core.config import settings
 from app.core.database import get_db, engine, Base
-from app.core.logging import logger
+from app.core.logging import logger, ctx_request_id
 
 # Initialize database tables if using sqlite or dev mode
 try:
@@ -18,6 +20,20 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Request-ID Correlation Middleware for Distributed Observability
+class RequestIDCorrelationMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+        token = ctx_request_id.set(request_id)
+        try:
+            response: Response = await call_next(request)
+            response.headers["X-Request-ID"] = request_id
+            return response
+        finally:
+            ctx_request_id.reset(token)
+
+app.add_middleware(RequestIDCorrelationMiddleware)
 
 # Set up CORS middleware
 if settings.BACKEND_CORS_ORIGINS:
@@ -79,9 +95,3 @@ app.include_router(audit.router, prefix=f"{settings.API_V1_STR}/audit-logs", tag
 app.include_router(models_route.router, prefix=f"{settings.API_V1_STR}/models", tags=["Models"])
 app.include_router(settings_route.router, prefix=f"{settings.API_V1_STR}/settings", tags=["Settings"])
 app.include_router(websocket.router, tags=["WebSocket"])
-
-
-
-
-
-

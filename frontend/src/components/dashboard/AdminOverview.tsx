@@ -36,7 +36,7 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
           </Button>
           <a
             href="/settings"
-            className="inline-flex items-center gap-1 text-xs font-semibold bg-emerald-500 text-slate-950 px-3 py-1.5 rounded-btn hover:bg-emerald-400"
+            className="inline-flex items-center gap-1 text-xs font-semibold bg-emerald-500 text-slate-950 px-3 py-1.5 rounded-btn hover:bg-emerald-400 transition-colors"
           >
             <Sliders className="w-3.5 h-3.5" /> Platform Settings
           </a>
@@ -47,45 +47,45 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-l-4 border-l-emerald-600">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total System Volume</span>
-            <Activity className="w-5 h-5 text-emerald-600" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total System Volume</span>
+            <Activity className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-slate-900">{stats?.total_transactions.toLocaleString() || '0'}</span>
-            <span className="text-xs text-emerald-600 font-medium">Evaluated</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats?.total_transactions.toLocaleString() || '0'}</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Evaluated</span>
           </div>
         </Card>
 
         <Card className="border-l-4 border-l-rose-600">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">High Risk Count</span>
-            <Activity className="w-5 h-5 text-rose-600" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">High Risk Count</span>
+            <Activity className="w-5 h-5 text-rose-600 dark:text-rose-400" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-rose-700">{stats?.high_risk_transactions.toLocaleString() || '0'}</span>
-            <span className="text-xs text-rose-600 font-semibold">{stats?.fraud_rate_percentage}% Rate</span>
+            <span className="text-2xl font-bold text-rose-600 dark:text-rose-400">{stats?.high_risk_transactions.toLocaleString() || '0'}</span>
+            <span className="text-xs text-rose-600 dark:text-rose-400 font-semibold">{stats?.fraud_rate_percentage}% Rate</span>
           </div>
         </Card>
 
         <Card className="border-l-4 border-l-blue-600">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Alerts</span>
-            <Activity className="w-5 h-5 text-blue-600" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Active Alerts</span>
+            <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-slate-900">{stats?.active_alerts.toLocaleString() || '0'}</span>
-            <span className="text-xs text-blue-600 font-medium">In Pipeline</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats?.active_alerts.toLocaleString() || '0'}</span>
+            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">In Pipeline</span>
           </div>
         </Card>
 
         <Card className="border-l-4 border-l-purple-600">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Audit Security</span>
-            <FileText className="w-5 h-5 text-purple-600" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Audit Security</span>
+            <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-slate-900">Protected</span>
-            <span className="text-xs text-purple-600 font-medium">Immutable</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">Protected</span>
+            <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Immutable</span>
           </div>
         </Card>
       </div>
@@ -94,19 +94,19 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card title="Administrative Controls" subtitle="System configuration and security management">
           <div className="space-y-3 mt-2">
-            <a href="/audit-logs" className="p-3 bg-slate-50 border border-slate-200 rounded-btn flex items-center justify-between hover:bg-slate-100 transition-colors">
+            <a href="/audit-logs" className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-btn flex items-center justify-between hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
               <div>
-                <span className="text-xs font-bold text-slate-900 block">Immutable Audit Trail Logs</span>
-                <span className="text-[11px] text-slate-500">Review security access, login events, and risk threshold adjustments.</span>
+                <span className="text-xs font-bold text-slate-900 dark:text-slate-100 block">Immutable Audit Trail Logs</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">Review security access, login events, and risk threshold adjustments.</span>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-emerald-600" />
+              <ArrowUpRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </a>
-            <a href="/settings" className="p-3 bg-slate-50 border border-slate-200 rounded-btn flex items-center justify-between hover:bg-slate-100 transition-colors">
+            <a href="/settings" className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-btn flex items-center justify-between hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
               <div>
-                <span className="text-xs font-bold text-slate-900 block">System Settings & Risk Thresholds</span>
-                <span className="text-[11px] text-slate-500">Configure medium/high risk thresholds and view engine diagnostics.</span>
+                <span className="text-xs font-bold text-slate-900 dark:text-slate-100 block">System Settings & Risk Thresholds</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">Configure medium/high risk thresholds and view engine diagnostics.</span>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-emerald-600" />
+              <ArrowUpRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </a>
           </div>
         </Card>
@@ -114,9 +114,9 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
         <Card title="Live Transaction Feed" subtitle="Recent high-risk transactions evaluated by engine">
           <div className="space-y-2 mt-2">
             {recentHighRisk.slice(0, 3).map((tx) => (
-              <div key={tx.id} className="p-2.5 bg-slate-50 border border-slate-200 rounded text-xs flex justify-between items-center">
-                <span className="font-mono font-semibold text-slate-800">{tx.transaction_id}</span>
-                <span className="text-slate-500 font-mono">${tx.amount.toLocaleString()}</span>
+              <div key={tx.id} className="p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded text-xs flex justify-between items-center">
+                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">{tx.transaction_id}</span>
+                <span className="text-slate-500 dark:text-slate-400 font-mono">${tx.amount.toLocaleString()}</span>
               </div>
             ))}
           </div>

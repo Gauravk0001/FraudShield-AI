@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Sliders,
   Eye,
+  SlidersHorizontal,
 } from 'lucide-react';
 import type { UserRole } from '../../types';
 
@@ -36,6 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Alert Triage', path: '/alerts', icon: AlertTriangle, roles: ['FRAUD_ANALYST'] },
   { section: 'INVESTIGATION', label: 'Case Workspace', path: '/investigations', icon: Search, roles: ['FRAUD_ANALYST'] },
   { label: 'AI Copilot', path: '/copilot', icon: Bot, roles: ['FRAUD_ANALYST'] },
+  { section: 'PREFERENCES', label: 'Settings & Display', path: '/settings', icon: SlidersHorizontal, roles: ['FRAUD_ANALYST'] },
 
   // Risk Manager sections
   { section: 'OVERSIGHT', label: 'Risk Overview', path: '/', icon: TrendingUp, roles: ['RISK_MANAGER'] },
@@ -44,7 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Case Backlog', path: '/investigations', icon: Search, roles: ['RISK_MANAGER'] },
   { section: 'GOVERNANCE', label: 'Model Performance', path: '/models', icon: Cpu, roles: ['RISK_MANAGER'] },
   { label: 'AI Intelligence', path: '/copilot', icon: Bot, roles: ['RISK_MANAGER'] },
-  { label: 'Risk Settings', path: '/settings', icon: Sliders, roles: ['RISK_MANAGER'] },
+  { label: 'Risk & Platform Settings', path: '/settings', icon: Sliders, roles: ['RISK_MANAGER'] },
 
   // Admin sections
   { section: 'PLATFORM', label: 'Platform Overview', path: '/', icon: LayoutDashboard, roles: ['ADMIN'] },
@@ -61,6 +63,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Transactions', path: '/transactions', icon: Receipt, roles: ['VIEWER'] },
   { label: 'Alerts', path: '/alerts', icon: AlertTriangle, roles: ['VIEWER'] },
   { label: 'Investigations', path: '/investigations', icon: Search, roles: ['VIEWER'] },
+  { section: 'PREFERENCES', label: 'Settings & Theme', path: '/settings', icon: SlidersHorizontal, roles: ['VIEWER'] },
 ];
 
 const ROLE_MISSION: Record<UserRole, { tagline: string; color: string }> = {
@@ -78,6 +81,7 @@ const SECTION_COLORS: Record<string, string> = {
   PLATFORM: 'text-slate-400',
   'ADMIN TOOLS': 'text-purple-400',
   'READ ONLY': 'text-slate-500',
+  PREFERENCES: 'text-slate-400',
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ userRole = 'FRAUD_ANALYST' }) => {
@@ -94,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole = 'FRAUD_ANALYST' }) 
       rendered.push(
         <div
           key={`section-${item.section}-${idx}`}
-          className={`text-[9px] font-bold tracking-[0.15em] uppercase px-3 mt-5 mb-1 ${SECTION_COLORS[item.section] ?? 'text-slate-500'}`}
+          className={`text-[9px] font-bold tracking-[0.15em] uppercase px-3 mt-4 mb-1 ${SECTION_COLORS[item.section] ?? 'text-slate-500'}`}
         >
           {item.section}
         </div>
@@ -135,7 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole = 'FRAUD_ANALYST' }) 
         </div>
       </div>
 
-      <nav className="flex-1 px-4 py-4 space-y-0.5">
+      <nav className="flex-1 px-4 py-3 space-y-0.5 overflow-y-auto">
         {rendered}
       </nav>
 

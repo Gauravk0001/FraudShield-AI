@@ -59,7 +59,7 @@ export const RiskManagerOverview: React.FC<RiskManagerOverviewProps> = ({
           </Button>
           <a
             href="/settings"
-            className="inline-flex items-center gap-1 text-xs font-semibold bg-amber-500 text-slate-950 px-3 py-1.5 rounded-btn hover:bg-amber-400"
+            className="inline-flex items-center gap-1 text-xs font-semibold bg-amber-500 text-slate-950 px-3 py-1.5 rounded-btn hover:bg-amber-400 transition-colors"
           >
             <Sliders className="w-3.5 h-3.5" /> Adjust Thresholds
           </a>
@@ -70,49 +70,49 @@ export const RiskManagerOverview: React.FC<RiskManagerOverviewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-l-4 border-l-purple-600">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fraud Exposure Rate</span>
-            <TrendingUp className="w-5 h-5 text-purple-600" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Fraud Exposure Rate</span>
+            <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-slate-900">{stats?.fraud_rate_percentage || 0}%</span>
-            <span className="text-xs text-purple-600 font-semibold">Score ≥ 70</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats?.fraud_rate_percentage || 0}%</span>
+            <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">Score ≥ 70</span>
           </div>
         </Card>
 
         <Card className="border-l-4 border-l-emerald-600">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Classifier Precision</span>
-            <ShieldCheck className="w-5 h-5 text-emerald-600" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Classifier Precision</span>
+            <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-slate-900">
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
               {xgboostModel?.metrics?.precision ? `${(xgboostModel.metrics.precision * 100).toFixed(1)}%` : '94.2%'}
             </span>
-            <span className="text-xs text-emerald-600 font-medium">Verified ML Metric</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Verified ML Metric</span>
           </div>
         </Card>
 
         <Card className="border-l-4 border-l-blue-600">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Classifier ROC-AUC</span>
-            <BarChart2 className="w-5 h-5 text-blue-600" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Classifier ROC-AUC</span>
+            <BarChart2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-slate-900">
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
               {xgboostModel?.metrics?.roc_auc ? xgboostModel.metrics.roc_auc : '0.987'}
             </span>
-            <span className="text-xs text-blue-600 font-medium">Calibrated Engine</span>
+            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Calibrated Engine</span>
           </div>
         </Card>
 
         <Card className="border-l-4 border-l-amber-500">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Investigation Backlog</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Investigation Backlog</span>
             <Activity className="w-5 h-5 text-amber-500" />
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-2xl font-bold text-slate-900">{stats?.open_investigations || openInvestigations.length}</span>
-            <span className="text-xs text-amber-600 font-medium">Pending Review</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats?.open_investigations || openInvestigations.length}</span>
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Pending Review</span>
           </div>
         </Card>
       </div>
@@ -133,10 +133,10 @@ export const RiskManagerOverview: React.FC<RiskManagerOverviewProps> = ({
                     <stop offset="95%" stopColor="#DC2626" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
                 <XAxis dataKey="date" stroke="#94A3B8" fontSize={11} />
                 <YAxis stroke="#94A3B8" fontSize={11} />
-                <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderRadius: '8px', border: 'none', color: '#fff', fontSize: '12px' }} />
+                <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderRadius: '8px', border: '1px solid #334155', color: '#fff', fontSize: '12px' }} />
                 <Area type="monotone" dataKey="total_volume" name="Total Ingested Volume" stroke="#8B5CF6" fillOpacity={1} fill="url(#colorTotalRM)" strokeWidth={2} />
                 <Area type="monotone" dataKey="high_risk" name="High Risk Flagged" stroke="#DC2626" fillOpacity={1} fill="url(#colorHighRM)" strokeWidth={2} />
               </AreaChart>
@@ -148,24 +148,24 @@ export const RiskManagerOverview: React.FC<RiskManagerOverviewProps> = ({
         <Card title="ML Model Architecture" subtitle="Validated ML Engine & Performance Status">
           <div className="space-y-4 mt-2">
             {models.length === 0 ? (
-              <div className="text-xs text-slate-500 py-4 text-center">Loading model metrics...</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 py-4 text-center">Loading model metrics...</div>
             ) : (
               models.map((model, idx) => (
-                <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-btn space-y-2">
+                <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-btn space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <Cpu className="w-4 h-4 text-purple-600" />
-                      <span className="text-xs font-bold text-slate-900">{model.model_type}</span>
+                      <Cpu className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{model.model_type}</span>
                     </div>
-                    <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 rounded-full">
+                    <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 rounded-full">
                       {model.status}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-[11px] border-t border-slate-200 pt-2">
+                  <div className="grid grid-cols-2 gap-2 text-[11px] border-t border-slate-200 dark:border-slate-700/60 pt-2">
                     {Object.entries(model.metrics).slice(0, 4).map(([key, val]) => (
                       <div key={key}>
-                        <span className="text-slate-500 block uppercase text-[9px]">{key.replace('_', ' ')}</span>
-                        <span className="font-bold text-slate-800">
+                        <span className="text-slate-500 dark:text-slate-400 block uppercase text-[9px]">{key.replace('_', ' ')}</span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
                           {typeof val === 'number' ? (val < 1 ? `${(val * 100).toFixed(1)}%` : val) : String(val)}
                         </span>
                       </div>
@@ -175,7 +175,7 @@ export const RiskManagerOverview: React.FC<RiskManagerOverviewProps> = ({
               ))
             )}
             <div className="pt-2 text-center">
-              <a href="/models" className="text-xs font-semibold text-purple-600 hover:text-purple-800 inline-flex items-center gap-1">
+              <a href="/models" className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 inline-flex items-center gap-1">
                 View Model Registry & Architecture <ArrowUpRight className="w-3.5 h-3.5" />
               </a>
             </div>
@@ -188,7 +188,7 @@ export const RiskManagerOverview: React.FC<RiskManagerOverviewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
                 <th className="py-3 px-4">Case ID</th>
                 <th className="py-3 px-4">Severity</th>
                 <th className="py-3 px-4">Status</th>
@@ -197,25 +197,25 @@ export const RiskManagerOverview: React.FC<RiskManagerOverviewProps> = ({
                 <th className="py-3 px-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
               {openInvestigations.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-6 text-slate-400">No open cases in queue</td></tr>
+                <tr><td colSpan={6} className="text-center py-6 text-slate-400 dark:text-slate-500">No open cases in queue</td></tr>
               ) : (
                 openInvestigations.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3 px-4 font-mono font-medium text-slate-900">#{inv.id.slice(0, 8)}</td>
-                    <td className="py-3 px-4 font-semibold text-slate-800">{inv.alert?.severity || 'HIGH'}</td>
+                  <tr key={inv.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="py-3 px-4 font-mono font-medium text-slate-900 dark:text-slate-100">#{inv.id.slice(0, 8)}</td>
+                    <td className="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">{inv.alert?.severity || 'HIGH'}</td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${
-                        inv.status === 'OPEN' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+                        inv.status === 'OPEN' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300' : 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300'
                       }`}>
                         {inv.status}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-slate-600">{inv.assigned_analyst_id ? 'Assigned' : 'Unassigned'}</td>
-                    <td className="py-3 px-4 text-slate-500">{new Date(inv.created_at).toLocaleDateString()}</td>
+                    <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{inv.assigned_analyst_id ? 'Assigned' : 'Unassigned'}</td>
+                    <td className="py-3 px-4 text-slate-500 dark:text-slate-400">{new Date(inv.created_at).toLocaleDateString()}</td>
                     <td className="py-3 px-4 text-right">
-                      <a href={`/investigations`} className="text-purple-600 font-semibold hover:text-purple-800">
+                      <a href={`/investigations`} className="text-purple-600 dark:text-purple-400 font-semibold hover:underline">
                         Review Case →
                       </a>
                     </td>

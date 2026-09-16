@@ -25,17 +25,17 @@ const SeverityBar: React.FC<{ label: RiskLevel; count: number; total: number; co
   return (
     <div className="flex items-center gap-3 text-xs">
       <span className={`w-16 font-bold ${color} shrink-0`}>{label}</span>
-      <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
+      <div className="flex-1 h-3 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${
-            label === 'CRITICAL' ? 'bg-purple-600' :
-            label === 'HIGH' ? 'bg-rose-600' :
-            label === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500'
+            label === 'CRITICAL' ? 'bg-purple-600 dark:bg-purple-500' :
+            label === 'HIGH' ? 'bg-rose-600 dark:bg-rose-500' :
+            label === 'MEDIUM' ? 'bg-amber-500 dark:bg-amber-400' : 'bg-emerald-500 dark:bg-emerald-400'
           }`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-20 text-right text-slate-600 font-semibold shrink-0">
+      <span className="w-20 text-right text-slate-600 dark:text-slate-400 font-semibold shrink-0">
         {count} ({pct}%)
       </span>
     </div>
@@ -51,43 +51,47 @@ const TriagePanel: React.FC<{
   onEscalate: (alert: Alert) => void;
   isActing: boolean;
 }> = ({ alert, onClose, onAcknowledge, onEscalate, isActing }) => (
-  <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-4">
-    <div className="bg-white w-full max-w-lg rounded-modal shadow-2xl border border-slate-200 space-y-4 p-6 max-h-[90vh] overflow-y-auto">
+  <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-4">
+    <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-modal shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 p-6 max-h-[90vh] overflow-y-auto">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-          <ShieldAlert className="w-5 h-5 text-rose-600" />
-          Alert Triage
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <ShieldAlert className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+          Alert Triage Investigation
         </h3>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-100">
+        <button
+          onClick={onClose}
+          aria-label="Close panel"
+          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+        >
           <X className="w-4 h-4" />
         </button>
       </div>
 
       {/* Alert summary */}
-      <div className="p-3 bg-slate-50 border border-slate-200 rounded-btn space-y-3">
+      <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-btn space-y-3">
         <div className="flex items-start justify-between">
           <div>
-            <p className="font-bold text-slate-900 text-sm">{alert.title}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{alert.description}</p>
+            <p className="font-bold text-slate-900 dark:text-slate-100 text-sm">{alert.title}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{alert.description}</p>
           </div>
           <RiskBadge level={alert.severity} score={alert.risk_score} />
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div>
             <span className="text-slate-400 block">Transaction</span>
-            <span className="font-mono font-medium text-slate-900">{alert.transaction_id}</span>
+            <span className="font-mono font-medium text-slate-900 dark:text-slate-100">{alert.transaction_id}</span>
           </div>
           <div>
             <span className="text-slate-400 block">Customer</span>
-            <span className="font-medium text-slate-900">{alert.customer_id}</span>
+            <span className="font-medium text-slate-900 dark:text-slate-100">{alert.customer_id}</span>
           </div>
           <div>
             <span className="text-slate-400 block">Amount</span>
-            <span className="font-bold text-slate-900">${alert.amount.toLocaleString()}</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">${alert.amount.toLocaleString()}</span>
           </div>
           <div>
             <span className="text-slate-400 block">Risk Score</span>
-            <span className="font-bold text-rose-700">{Math.round(alert.risk_score)} / 100</span>
+            <span className="font-bold text-rose-600 dark:text-rose-400">{Math.round(alert.risk_score)} / 100</span>
           </div>
         </div>
       </div>
@@ -95,7 +99,7 @@ const TriagePanel: React.FC<{
       {/* SHAP Risk Factors */}
       {alert.primary_risk_factors && alert.primary_risk_factors.length > 0 && (
         <div>
-          <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Primary Risk Factors</h4>
+          <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Primary Risk Factors (SHAP)</h4>
           <div className="space-y-2">
             {alert.primary_risk_factors.slice(0, 4).map((factor, i) => {
               const isPositive = factor.direction === 'POSITIVE';
@@ -103,18 +107,18 @@ const TriagePanel: React.FC<{
               return (
                 <div key={i} className="space-y-0.5">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-mono text-slate-700">{factor.feature_name}</span>
-                    <span className={`font-bold ml-2 ${isPositive ? 'text-rose-600' : 'text-emerald-600'}`}>
+                    <span className="font-mono text-slate-700 dark:text-slate-300">{factor.feature_name}</span>
+                    <span className={`font-bold ml-2 ${isPositive ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
                       {isPositive ? '+' : ''}{(factor.contribution * 100).toFixed(1)}%
                     </span>
                   </div>
-                  <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${isPositive ? 'bg-rose-500' : 'bg-emerald-500'}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <p className="text-[10px] text-slate-400">{factor.explanation}</p>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500">{factor.explanation}</p>
                 </div>
               );
             })}
@@ -124,7 +128,7 @@ const TriagePanel: React.FC<{
 
       {/* Triage Actions */}
       {alert.status === 'NEW' && (
-        <div className="flex gap-3 pt-2 border-t border-slate-100">
+        <div className="flex gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
           <Button
             variant="outline"
             size="sm"
@@ -149,8 +153,8 @@ const TriagePanel: React.FC<{
       )}
 
       {alert.status !== 'NEW' && (
-        <div className="text-xs text-center text-slate-500 py-2">
-          Alert is <span className="font-semibold text-slate-700">{alert.status}</span> — no triage actions available.
+        <div className="text-xs text-center text-slate-500 dark:text-slate-400 py-2">
+          Alert is <span className="font-semibold text-slate-700 dark:text-slate-300">{alert.status}</span> — no triage actions available.
         </div>
       )}
     </div>
@@ -250,13 +254,13 @@ export const AlertsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
             {isRiskManager
-              ? <BarChart2 className="w-5 h-5 text-purple-600" />
-              : <ShieldAlert className="w-5 h-5 text-rose-600" />}
+              ? <BarChart2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              : <ShieldAlert className="w-5 h-5 text-rose-600 dark:text-rose-400" />}
             {isRiskManager ? 'Alert Volume & Severity Oversight' : 'Fraud Alert Triage Stream'}
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {isRiskManager
               ? 'Portfolio alert distribution, severity trends, and investigation backlog monitoring.'
               : 'Real-time alert triage queue — acknowledge and escalate to investigation in one click.'}
@@ -269,7 +273,7 @@ export const AlertsPage: React.FC = () => {
 
       {/* Success banner */}
       {actionSuccess && (
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-btn">
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-medium rounded-btn">
           <CheckCircle2 className="w-4 h-4 shrink-0" />{actionSuccess}
         </div>
       )}
@@ -278,20 +282,20 @@ export const AlertsPage: React.FC = () => {
       {isRiskManager && alerts.length > 0 && (
         <Card title="Severity Distribution" subtitle="Portfolio-wide alert breakdown by severity level">
           <div className="space-y-3 mt-3">
-            <SeverityBar label="CRITICAL" count={criticalCount} total={alerts.length} color="text-purple-700" />
-            <SeverityBar label="HIGH" count={highCount} total={alerts.length} color="text-rose-700" />
-            <SeverityBar label="MEDIUM" count={mediumCount} total={alerts.length} color="text-amber-700" />
-            <SeverityBar label="LOW" count={lowCount} total={alerts.length} color="text-emerald-700" />
+            <SeverityBar label="CRITICAL" count={criticalCount} total={alerts.length} color="text-purple-700 dark:text-purple-400" />
+            <SeverityBar label="HIGH" count={highCount} total={alerts.length} color="text-rose-700 dark:text-rose-400" />
+            <SeverityBar label="MEDIUM" count={mediumCount} total={alerts.length} color="text-amber-700 dark:text-amber-400" />
+            <SeverityBar label="LOW" count={lowCount} total={alerts.length} color="text-emerald-700 dark:text-emerald-400" />
           </div>
-          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
             <span>
               Investigation conversion rate:{' '}
-              <span className="font-bold text-slate-900">
+              <span className="font-bold text-slate-900 dark:text-slate-100">
                 {newCount > 0 ? Math.round(((alerts.length - newCount) / alerts.length) * 100) : 0}%
               </span>{' '}
               of alerts escalated
             </span>
-            <span className="text-slate-400">{alerts.length} total alerts</span>
+            <span className="text-slate-400 dark:text-slate-500">{alerts.length} total alerts</span>
           </div>
         </Card>
       )}
@@ -305,7 +309,7 @@ export const AlertsPage: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search title, transaction, customer..."
-              className="w-full pl-9 pr-4 py-1.5 text-xs border border-slate-300 rounded-btn focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-4 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-btn text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -314,7 +318,7 @@ export const AlertsPage: React.FC = () => {
               aria-label="Filter alerts by status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as AlertStatus | 'ALL')}
-              className="text-xs border border-slate-300 rounded-btn px-2.5 py-1.5 bg-white"
+              className="text-xs border border-slate-300 dark:border-slate-700 rounded-btn px-2.5 py-1.5 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
             >
               {statusOptions.map((s) => <option key={s} value={s}>{s === 'ALL' ? 'All statuses' : s}</option>)}
             </select>
@@ -322,7 +326,7 @@ export const AlertsPage: React.FC = () => {
               aria-label="Filter alerts by severity"
               value={severityFilter}
               onChange={(e) => setSeverityFilter(e.target.value as RiskLevel | 'ALL')}
-              className="text-xs border border-slate-300 rounded-btn px-2.5 py-1.5 bg-white"
+              className="text-xs border border-slate-300 dark:border-slate-700 rounded-btn px-2.5 py-1.5 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
             >
               {severityOptions.map((s) => <option key={s} value={s}>{s === 'ALL' ? 'All severities' : s}</option>)}
             </select>
@@ -335,7 +339,7 @@ export const AlertsPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider">
+              <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
                 <th className="py-3 px-4">Alert</th>
                 <th className="py-3 px-4">Transaction</th>
                 <th className="py-3 px-4">Severity</th>
@@ -346,12 +350,12 @@ export const AlertsPage: React.FC = () => {
                 {isAnalyst && <th className="py-3 px-4 text-right">Action</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
               {loading ? (
                 <tr><td colSpan={isAnalyst ? 8 : isRiskManager ? 8 : 7} className="text-center py-10 text-slate-500">Loading alerts...</td></tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-10 text-red-600">
+                  <td colSpan={8} className="text-center py-10 text-red-600 dark:text-red-400">
                     <p>{error}</p>
                     <Button variant="outline" size="sm" className="mt-3" onClick={fetchAlerts}>Retry</Button>
                   </td>
@@ -359,32 +363,32 @@ export const AlertsPage: React.FC = () => {
               ) : visibleAlerts.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center py-10 text-slate-500">
-                    <AlertTriangle className="w-7 h-7 mx-auto mb-2 text-slate-300" />
+                    <AlertTriangle className="w-7 h-7 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
                     No alerts match the current filters.
                   </td>
                 </tr>
               ) : (
                 visibleAlerts.map((alert) => (
-                  <tr key={alert.id} className={`hover:bg-slate-50/80 transition-colors ${
-                    isAnalyst && alert.status === 'NEW' ? 'border-l-2 border-l-rose-400' : ''
+                  <tr key={alert.id} className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors ${
+                    isAnalyst && alert.status === 'NEW' ? 'border-l-2 border-l-rose-400 dark:border-l-rose-500' : ''
                   }`}>
                     <td className="py-3 px-4 max-w-xs">
-                      <p className="font-semibold text-slate-900">{alert.title}</p>
-                      <p className="text-slate-500 mt-0.5 truncate">{alert.description}</p>
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{alert.title}</p>
+                      <p className="text-slate-500 dark:text-slate-400 mt-0.5 truncate">{alert.description}</p>
                     </td>
                     <td className="py-3 px-4">
-                      <p className="font-mono text-slate-800">{alert.transaction_id}</p>
-                      <p className="text-slate-500 mt-0.5">{alert.customer_id}</p>
+                      <p className="font-mono text-slate-800 dark:text-slate-200">{alert.transaction_id}</p>
+                      <p className="text-slate-500 dark:text-slate-400 mt-0.5">{alert.customer_id}</p>
                     </td>
                     <td className="py-3 px-4"><RiskBadge level={alert.severity} /></td>
-                    <td className="py-3 px-4 font-semibold text-slate-900">{Math.round(alert.risk_score)} / 100</td>
+                    <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">{Math.round(alert.risk_score)} / 100</td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${
-                        alert.status === 'NEW' ? 'bg-rose-100 text-rose-800' :
-                        alert.status === 'ACKNOWLEDGED' ? 'bg-amber-100 text-amber-800' :
-                        alert.status === 'INVESTIGATING' ? 'bg-blue-100 text-blue-800' :
-                        alert.status === 'RESOLVED' ? 'bg-emerald-100 text-emerald-800' :
-                        'bg-slate-100 text-slate-700'
+                        alert.status === 'NEW' ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300' :
+                        alert.status === 'ACKNOWLEDGED' ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300' :
+                        alert.status === 'INVESTIGATING' ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300' :
+                        alert.status === 'RESOLVED' ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300' :
+                        'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                       }`}>
                         {alert.status}
                       </span>
@@ -392,20 +396,20 @@ export const AlertsPage: React.FC = () => {
                     {isRiskManager && (
                       <td className="py-3 px-4">
                         <span className={`flex items-center gap-1 text-xs font-semibold ${
-                          hoursSince(alert.created_at) >= 24 ? 'text-rose-600' : 'text-slate-600'
+                          hoursSince(alert.created_at) >= 24 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400'
                         }`}>
                           <Clock className="w-3.5 h-3.5" />{hoursSince(alert.created_at)}h
                         </span>
                       </td>
                     )}
-                    <td className="py-3 px-4 text-slate-500 whitespace-nowrap">
+                    <td className="py-3 px-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                       {new Date(alert.created_at).toLocaleString()}
                     </td>
                     {isAnalyst && (
                       <td className="py-3 px-4 text-right">
                         <button
                           onClick={() => setTriageAlert(alert)}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
                         >
                           Triage <ChevronRight className="w-3.5 h-3.5" />
                         </button>

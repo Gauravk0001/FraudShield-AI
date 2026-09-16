@@ -23,12 +23,12 @@
 | FS-016 (DONE) | — Implement Redis Event Publishing | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-017 (DONE) | — Implement WebSocket Alert Stream | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-018 (DONE) | — Build Frontend Design System | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-019 | — Build Login Experience | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-020 | — Build Main Application Layout | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-021 | — Build Fraud Operations Dashboard | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-022 | — Implement Dashboard Risk Trends | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-023 | — Build Transaction Table | MUST-HAVE | NOT_STARTED | - | Initial state |
-| FS-024 | — Build Transaction Detail View | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-019 (DONE) | — Build Login Experience | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-020 (DONE) | — Build Main Application Layout | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-021 (DONE) | — Build Fraud Operations Dashboard | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-022 (DONE) | — Implement Dashboard Risk Trends | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-023 (DONE) | — Build Transaction Table | MUST-HAVE | NOT_STARTED | - | Initial state |
+| FS-024 (DONE) | — Build Transaction Detail View | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-025 | — Build Investigation Creation Workflow | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-026 | — Build Investigation Workspace | MUST-HAVE | NOT_STARTED | - | Initial state |
 | FS-027 | — Implement Investigation State Management | MUST-HAVE | NOT_STARTED | - | Initial state |

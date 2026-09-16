@@ -25,6 +25,9 @@ var/
 .pytest_cache/
 .coverage
 htmlcov/
+*.db
+*.sqlite3
+
 
 # Node
 frontend/node_modules/

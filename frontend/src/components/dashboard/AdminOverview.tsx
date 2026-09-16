@@ -20,13 +20,13 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
   return (
     <div className="space-y-6">
       {/* Admin Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-950 p-6 rounded-card text-white shadow-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-emerald-50 via-slate-50 to-teal-50 dark:from-emerald-950 dark:via-slate-900 dark:to-slate-950 border border-emerald-200 dark:border-slate-800 p-6 rounded-card text-slate-900 dark:text-white shadow-xs transition-colors">
         <div>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-emerald-400" />
-            <h2 className="text-xl font-bold tracking-tight">Platform Administration & System Health</h2>
+            <ShieldCheck className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Platform Administration & System Health</h2>
           </div>
-          <p className="text-xs text-emerald-200 mt-1">
+          <p className="text-xs text-slate-600 dark:text-emerald-200 mt-1">
             Global system management, immutable audit log monitoring, and platform configuration control.
           </p>
         </div>
@@ -36,7 +36,7 @@ export const AdminOverview: React.FC<AdminOverviewProps> = ({
           </Button>
           <a
             href="/settings"
-            className="inline-flex items-center gap-1 text-xs font-semibold bg-emerald-500 text-slate-950 px-3 py-1.5 rounded-btn hover:bg-emerald-400 transition-colors"
+            className="inline-flex items-center gap-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-btn transition-colors"
           >
             <Sliders className="w-3.5 h-3.5" /> Platform Settings
           </a>

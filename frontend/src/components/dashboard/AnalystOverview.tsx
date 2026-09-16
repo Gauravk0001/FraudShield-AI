@@ -25,13 +25,13 @@ export const AnalystOverview: React.FC<AnalystOverviewProps> = ({
   return (
     <div className="space-y-6">
       {/* Analyst Operational Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-blue-900 via-slate-900 to-indigo-950 p-6 rounded-card text-white shadow-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-blue-50 via-indigo-50/70 to-slate-50 dark:from-blue-950 dark:via-slate-900 dark:to-indigo-950 border border-blue-200 dark:border-slate-800 p-6 rounded-card text-slate-900 dark:text-white shadow-xs transition-colors">
         <div>
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-6 h-6 text-blue-400" />
-            <h2 className="text-xl font-bold tracking-tight">Fraud Operations & Triage Workspace</h2>
+            <ShieldAlert className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Fraud Operations & Triage Workspace</h2>
           </div>
-          <p className="text-xs text-blue-200 mt-1">
+          <p className="text-xs text-slate-600 dark:text-blue-200 mt-1">
             Detect suspicious transactions, triage real-time alerts, and execute end-to-end evidence investigations.
           </p>
         </div>

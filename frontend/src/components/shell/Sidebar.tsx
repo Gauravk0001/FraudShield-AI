@@ -67,26 +67,26 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const ROLE_MISSION: Record<UserRole, { tagline: string; color: string }> = {
-  FRAUD_ANALYST: { tagline: 'Detect · Investigate · Decide', color: 'text-blue-400' },
-  RISK_MANAGER: { tagline: 'Oversee · Govern · Optimize', color: 'text-amber-400' },
-  ADMIN: { tagline: 'Configure · Audit · Control', color: 'text-purple-400' },
-  VIEWER: { tagline: 'Observe · Review · Report', color: 'text-slate-400' },
+  FRAUD_ANALYST: { tagline: 'Detect · Investigate · Decide', color: 'text-blue-600 dark:text-blue-400' },
+  RISK_MANAGER: { tagline: 'Oversee · Govern · Optimize', color: 'text-amber-600 dark:text-amber-400' },
+  ADMIN: { tagline: 'Configure · Audit · Control', color: 'text-purple-600 dark:text-purple-400' },
+  VIEWER: { tagline: 'Observe · Review · Report', color: 'text-slate-500 dark:text-slate-400' },
 };
 
 const SECTION_COLORS: Record<string, string> = {
-  DETECTION: 'text-blue-400',
-  INVESTIGATION: 'text-indigo-400',
-  OVERSIGHT: 'text-amber-400',
-  GOVERNANCE: 'text-purple-400',
-  PLATFORM: 'text-slate-400',
-  'ADMIN TOOLS': 'text-purple-400',
-  'READ ONLY': 'text-slate-500',
-  PREFERENCES: 'text-slate-400',
+  DETECTION: 'text-blue-600 dark:text-blue-400',
+  INVESTIGATION: 'text-indigo-600 dark:text-indigo-400',
+  OVERSIGHT: 'text-amber-600 dark:text-amber-400',
+  GOVERNANCE: 'text-purple-600 dark:text-purple-400',
+  PLATFORM: 'text-slate-500 dark:text-slate-400',
+  'ADMIN TOOLS': 'text-purple-600 dark:text-purple-400',
+  'READ ONLY': 'text-slate-500 dark:text-slate-400',
+  PREFERENCES: 'text-slate-500 dark:text-slate-400',
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ userRole = 'FRAUD_ANALYST' }) => {
   const allowedItems = NAV_ITEMS.filter((item) => item.roles.includes(userRole));
-  const mission = ROLE_MISSION[userRole];
+  const mission = ROLE_MISSION[userRole] || ROLE_MISSION['FRAUD_ANALYST'];
 
   // Render items grouped by section
   const rendered: React.ReactNode[] = [];
@@ -98,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole = 'FRAUD_ANALYST' }) 
       rendered.push(
         <div
           key={`section-${item.section}-${idx}`}
-          className={`text-[9px] font-bold tracking-[0.15em] uppercase px-3 mt-4 mb-1 ${SECTION_COLORS[item.section] ?? 'text-slate-500'}`}
+          className={`text-[9px] font-bold tracking-[0.15em] uppercase px-3 mt-4 mb-1 ${SECTION_COLORS[item.section] ?? 'text-slate-500 dark:text-slate-400'}`}
         >
           {item.section}
         </div>
@@ -114,8 +114,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole = 'FRAUD_ANALYST' }) 
         className={({ isActive }) =>
           `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
             isActive
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+              ? 'bg-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'
           }`
         }
       >
@@ -126,13 +126,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole = 'FRAUD_ANALYST' }) 
   });
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 min-h-screen">
-      <div className="h-16 flex items-center px-6 border-b border-slate-800 gap-3">
+    <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0 min-h-screen transition-colors">
+      <div className="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-800 gap-3">
         <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold">
           <ShieldCheck className="w-5 h-5" />
         </div>
         <div>
-          <span className="font-bold text-white text-base tracking-wide">FraudShield AI</span>
+          <span className="font-bold text-slate-900 dark:text-white text-base tracking-wide">FraudShield AI</span>
           <span className={`block text-[10px] font-semibold font-mono ${mission.color}`}>
             {mission.tagline}
           </span>
@@ -143,14 +143,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole = 'FRAUD_ANALYST' }) 
         {rendered}
       </nav>
 
-      <div className="p-4 border-t border-slate-800">
-        <div className="bg-slate-800/60 rounded-lg p-3 text-xs text-slate-400">
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-lg p-3 text-xs text-slate-600 dark:text-slate-400">
           <div className="flex items-center gap-1.5 mb-1">
-            <Shield className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="font-semibold text-slate-300">Engine: Active</span>
+            <Shield className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-500" />
+            <span className="font-semibold text-slate-800 dark:text-slate-300">Engine: Active</span>
           </div>
-          <span className="block text-[11px]">XGBoost + Isolation Forest</span>
-          <span className="block text-[10px] text-slate-500 mt-0.5">v1.0.0 Enterprise</span>
+          <span className="block text-[11px] text-slate-600 dark:text-slate-400">XGBoost + Isolation Forest</span>
+          <span className="block text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">v1.0.0 Enterprise</span>
         </div>
       </div>
     </aside>

@@ -18,13 +18,13 @@ export const ViewerOverview: React.FC<ViewerOverviewProps> = ({
   return (
     <div className="space-y-6">
       {/* Viewer Header */}
-      <div className="flex items-center justify-between bg-slate-900 border border-slate-800 p-6 rounded-card text-white shadow-md">
+      <div className="flex items-center justify-between bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-card text-slate-900 dark:text-white shadow-xs transition-colors">
         <div>
           <div className="flex items-center gap-2">
-            <Eye className="w-6 h-6 text-slate-400" />
-            <h2 className="text-xl font-bold tracking-tight">Read-Only Operational View</h2>
+            <Eye className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Read-Only Operational View</h2>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Read-only monitoring of live transaction evaluation metrics and platform activity.
           </p>
         </div>

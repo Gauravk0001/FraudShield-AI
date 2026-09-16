@@ -45,13 +45,13 @@ export const RiskManagerOverview: React.FC<RiskManagerOverviewProps> = ({
   return (
     <div className="space-y-6">
       {/* Risk Manager Oversight Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 p-6 rounded-card text-white shadow-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-purple-50 via-slate-50 to-indigo-50 dark:from-purple-950 dark:via-slate-900 dark:to-indigo-950 border border-purple-200 dark:border-slate-800 p-6 rounded-card text-slate-900 dark:text-white shadow-xs transition-colors">
         <div>
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-amber-400" />
-            <h2 className="text-xl font-bold tracking-tight">Risk Intelligence & Operational Oversight</h2>
+            <TrendingUp className="w-6 h-6 text-amber-500 dark:text-amber-400" />
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Risk Intelligence & Operational Oversight</h2>
           </div>
-          <p className="text-xs text-purple-200 mt-1">
+          <p className="text-xs text-slate-600 dark:text-purple-200 mt-1">
             Supervise portfolio fraud rate, monitor ML model performance metrics, review investigation backlogs, and manage risk sensitivity.
           </p>
         </div>

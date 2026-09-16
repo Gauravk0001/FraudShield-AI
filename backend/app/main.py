@@ -55,7 +55,18 @@ def health_check(db: Session = Depends(get_db)):
         "version": "1.0.0"
     }
 
-from app.api.routes import auth, transactions, alerts, websocket, dashboard, investigations, copilot, audit, models_route
+from app.api.routes import (
+    alerts,
+    audit,
+    auth,
+    copilot,
+    dashboard,
+    investigations,
+    models_route,
+    settings_route,
+    transactions,
+    websocket,
+)
 
 # Mount routers
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Auth"])
@@ -66,8 +77,8 @@ app.include_router(investigations.router, prefix=f"{settings.API_V1_STR}/investi
 app.include_router(copilot.router, prefix=f"{settings.API_V1_STR}/copilot", tags=["Copilot"])
 app.include_router(audit.router, prefix=f"{settings.API_V1_STR}/audit-logs", tags=["Audit"])
 app.include_router(models_route.router, prefix=f"{settings.API_V1_STR}/models", tags=["Models"])
+app.include_router(settings_route.router, prefix=f"{settings.API_V1_STR}/settings", tags=["Settings"])
 app.include_router(websocket.router, tags=["WebSocket"])
-
 
 
 

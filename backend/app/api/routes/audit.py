@@ -13,13 +13,18 @@ router = APIRouter()
 
 class AuditLogResponse(BaseModel):
     id: str
+    organization_id: Optional[str] = None
+    user_id: Optional[str] = None
     action: str
-    user_id: Optional[str]
-    resource_type: Optional[str]
-    resource_id: Optional[str]
-    details: Optional[dict]
-    ip_address: Optional[str]
+    entity_type: Optional[str] = None
+    entity_id: Optional[str] = None
+    resource_type: Optional[str] = None
+    resource_id: Optional[str] = None
+    details: Optional[dict] = None
+    ip_address: Optional[str] = None
+    request_id: Optional[str] = None
     timestamp: datetime
+    created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -40,5 +45,5 @@ def get_audit_logs(
     if action:
         query = query.filter(AuditLog.action == action)
     
-    logs = query.order_by(AuditLog.timestamp.desc()).offset(offset).limit(limit).all()
+    logs = query.order_by(AuditLog.created_at.desc()).offset(offset).limit(limit).all()
     return logs

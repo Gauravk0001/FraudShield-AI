@@ -18,6 +18,8 @@ import { InvestigationWorkspace } from './pages/Investigation';
 import { CopilotPage } from './pages/Copilot';
 import { ModelsPage } from './pages/Models';
 import { AuditLogsPage } from './pages/AuditLogs';
+import { AlertsPage } from './pages/Alerts';
+import { SettingsPage } from './pages/Settings';
 
 export const App: React.FC = () => {
   return (
@@ -35,11 +37,12 @@ export const App: React.FC = () => {
         >
           <Route index element={<Dashboard />} />
           <Route path="transactions" element={<Transactions />} />
-          <Route path="alerts" element={<Transactions />} />
+          <Route path="alerts" element={<AlertsPage />} />
           <Route path="investigations" element={<InvestigationWorkspace />} />
           <Route path="copilot" element={<CopilotPage />} />
           <Route path="models" element={<ModelsPage />} />
           <Route path="audit-logs" element={<AuditLogsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

@@ -18,6 +18,18 @@ class AuditLog(Base):
     request_id: Mapped[str] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True)
 
+    @property
+    def timestamp(self) -> datetime:
+        return self.created_at
+
+    @property
+    def resource_type(self) -> str:
+        return self.entity_type
+
+    @property
+    def resource_id(self) -> str | None:
+        return self.entity_id
+
 class ModelVersion(Base):
     __tablename__ = "model_versions"
 
@@ -31,3 +43,11 @@ class ModelVersion(Base):
     status: Mapped[str] = mapped_column(String(20), default="ACTIVE", nullable=False) # ACTIVE, DEPRECATED
     metadata_json: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    @property
+    def model_name(self) -> str:
+        return self.model_type
+
+    @property
+    def model_metadata(self) -> dict:
+        return self.metadata_json or {}

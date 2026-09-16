@@ -12,9 +12,11 @@ export const Transactions: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [riskFilter, setRiskFilter] = useState<string>('ALL');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTransactions = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       let endpoint = '/transactions?limit=100';
       if (riskFilter !== 'ALL') {
@@ -23,7 +25,7 @@ export const Transactions: React.FC = () => {
       const data = await apiRequest<Transaction[]>(endpoint);
       setTransactions(data);
     } catch (err) {
-      console.error(err);
+      setError(err instanceof Error ? err.message : 'Failed to load transactions.');
     } finally {
       setIsLoading(false);
     }
@@ -104,7 +106,22 @@ export const Transactions: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredTransactions.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-10 text-slate-500">
+                    Loading transactions...
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-10 text-red-600">
+                    <p>{error}</p>
+                    <Button variant="outline" size="sm" className="mt-3" onClick={fetchTransactions}>
+                      Retry
+                    </Button>
+                  </td>
+                </tr>
+              ) : filteredTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center py-10 text-slate-400">
                     No matching transactions found

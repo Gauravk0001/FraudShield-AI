@@ -55,5 +55,8 @@ def health_check(db: Session = Depends(get_db)):
         "version": "1.0.0"
     }
 
-# Placeholder router mounts for subsequent tickets
-# app.include_router(auth_router, prefix=f"{settings.API_V1_STR}/auth", tags=["Auth"])
+from app.api.routes import auth
+
+# Mount routers
+app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["Auth"])
+

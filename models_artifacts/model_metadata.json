@@ -1,6 +1,6 @@
 {
   "version": "v1.0.0",
-  "model_type": "XGBoost",
+  "model_type": "XGBoost Classifier",
   "feature_names": [
     "amount",
     "transaction_type_encoded",
@@ -15,12 +15,23 @@
     "is_new_merchant",
     "location_changed"
   ],
-  "training_timestamp": "2026-09-16T06:47:06.796329+00:00",
+  "training_timestamp": "2026-09-16T07:59:43.087978+00:00",
   "metrics": {
+    "accuracy": 1.0,
     "precision": 1.0,
     "recall": 1.0,
     "f1_score": 1.0,
-    "roc_auc": 1.0
+    "roc_auc": 1.0,
+    "pr_auc": 1.0,
+    "fpr": 0.0,
+    "confusion_matrix": {
+      "TN": 1900,
+      "FP": 0,
+      "FN": 0,
+      "TP": 100
+    },
+    "mean_latency_ms": 9.321520800014696,
+    "train_time_ms": 131.4542293548584
   },
-  "dataset": "Synthetic Financial Fraud Dataset (5,000 samples, 5% imbalance ratio)"
+  "dataset": "Synthetic Financial Fraud Dataset (10,000 samples, 5.0% imbalance)"
 }

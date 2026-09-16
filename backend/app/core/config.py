@@ -47,9 +47,15 @@ class Settings(BaseSettings):
     def get_database_url(self) -> str:
         if self.SQLALCHEMY_DATABASE_URI:
             return self.SQLALCHEMY_DATABASE_URI
-        db_type = os.getenv("DB_TYPE", "")
-        if db_type == "sqlite" or self.ENVIRONMENT == "testing":
-            return "sqlite:///./test_fraudshield.db"
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        db_type = os.getenv("DB_TYPE", "").lower()
+        if db_type == "postgres" or db_type == "postgresql":
+            return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        db_path = os.path.join(project_root, "fraudshield.db").replace("\\", "/")
+        return f"sqlite:///{db_path}"
+
+
+
 
 settings = Settings()

@@ -6,8 +6,8 @@ import { Button } from '../components/ui/Button';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('analyst@shieldbank.com');
-  const [password, setPassword] = useState('Password123!');
+  const [email, setEmail] = useState('admin@shieldbank.com');
+  const [password, setPassword] = useState('AdminPass123!');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,10 +30,19 @@ export const Login: React.FC = () => {
     }
   };
 
-  const fillDemoAccount = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword('Password123!');
+  const fillDemoAccount = (role: 'analyst' | 'manager' | 'admin') => {
+    if (role === 'analyst') {
+      setEmail('analyst@shieldbank.com');
+      setPassword('AnalystPass123!');
+    } else if (role === 'manager') {
+      setEmail('manager@shieldbank.com');
+      setPassword('ManagerPass123!');
+    } else if (role === 'admin') {
+      setEmail('admin@shieldbank.com');
+      setPassword('AdminPass123!');
+    }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4 sm:px-6 lg:px-8">
@@ -101,23 +110,24 @@ export const Login: React.FC = () => {
           <p className="text-xs text-slate-500 font-medium mb-2">Quick Demo Accounts:</p>
           <div className="flex flex-wrap gap-2 text-xs">
             <button
-              onClick={() => fillDemoAccount('analyst@shieldbank.com')}
+              onClick={() => fillDemoAccount('analyst')}
               className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium cursor-pointer"
             >
               Fraud Analyst
             </button>
             <button
-              onClick={() => fillDemoAccount('manager@shieldbank.com')}
+              onClick={() => fillDemoAccount('manager')}
               className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium cursor-pointer"
             >
               Risk Manager
             </button>
             <button
-              onClick={() => fillDemoAccount('admin@shieldbank.com')}
+              onClick={() => fillDemoAccount('admin')}
               className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium cursor-pointer"
             >
               Admin
             </button>
+
           </div>
         </div>
       </div>

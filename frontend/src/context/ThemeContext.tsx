@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -12,6 +12,20 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'fraudshield_theme_preference';
+
+function updateDOMTheme(resolvedDark: boolean) {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  if (resolvedDark) {
+    root.classList.add('dark');
+    root.setAttribute('data-theme', 'dark');
+    root.style.colorScheme = 'dark';
+  } else {
+    root.classList.remove('dark');
+    root.setAttribute('data-theme', 'light');
+    root.style.colorScheme = 'light';
+  }
+}
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
@@ -36,37 +50,33 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return false;
   });
 
+  const applyTheme = useCallback((targetTheme: Theme) => {
+    let resolvedDark = false;
+    if (targetTheme === 'dark') {
+      resolvedDark = true;
+    } else if (targetTheme === 'light') {
+      resolvedDark = false;
+    } else {
+      resolvedDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    setIsDark(resolvedDark);
+    updateDOMTheme(resolvedDark);
+  }, []);
+
   useEffect(() => {
-    const applyTheme = () => {
-      let resolvedDark = false;
-      if (theme === 'dark') {
-        resolvedDark = true;
-      } else if (theme === 'light') {
-        resolvedDark = false;
-      } else {
-        resolvedDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      }
-
-      setIsDark(resolvedDark);
-      if (resolvedDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    };
-
-    applyTheme();
+    applyTheme(theme);
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {
       if (theme === 'system') {
-        applyTheme();
+        applyTheme('system');
       }
     };
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme]);
+  }, [theme, applyTheme]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
@@ -75,10 +85,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch {
       // Ignore
     }
+    applyTheme(newTheme);
   };
 
   const toggleTheme = () => {
-    // If currently dark, switch to light; if currently light, switch to dark
     const nextTheme: Theme = isDark ? 'light' : 'dark';
     setTheme(nextTheme);
   };

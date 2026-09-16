@@ -4,6 +4,7 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { apiRequest } from '../../services/api';
+import { useTheme } from '../../context/ThemeContext';
 import type { DashboardStats, Investigation } from '../../types';
 
 interface ModelVersion {
@@ -30,6 +31,7 @@ export const RiskManagerOverview: React.FC<RiskManagerOverviewProps> = ({
   onRefresh,
   isLoading,
 }) => {
+  const { isDark } = useTheme();
   const [models, setModels] = useState<ModelVersion[]>([]);
 
   useEffect(() => {
@@ -133,10 +135,19 @@ export const RiskManagerOverview: React.FC<RiskManagerOverviewProps> = ({
                     <stop offset="95%" stopColor="#DC2626" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
-                <XAxis dataKey="date" stroke="#94A3B8" fontSize={11} />
-                <YAxis stroke="#94A3B8" fontSize={11} />
-                <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderRadius: '8px', border: '1px solid #334155', color: '#fff', fontSize: '12px' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#E2E8F0'} opacity={0.6} />
+                <XAxis dataKey="date" stroke={isDark ? '#94A3B8' : '#64748B'} fontSize={11} />
+                <YAxis stroke={isDark ? '#94A3B8' : '#64748B'} fontSize={11} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+                    borderRadius: '8px',
+                    border: isDark ? '1px solid #334155' : '1px solid #E2E8F0',
+                    color: isDark ? '#F8FAFC' : '#0F172A',
+                    fontSize: '12px',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                  }}
+                />
                 <Area type="monotone" dataKey="total_volume" name="Total Ingested Volume" stroke="#8B5CF6" fillOpacity={1} fill="url(#colorTotalRM)" strokeWidth={2} />
                 <Area type="monotone" dataKey="high_risk" name="High Risk Flagged" stroke="#DC2626" fillOpacity={1} fill="url(#colorHighRM)" strokeWidth={2} />
               </AreaChart>

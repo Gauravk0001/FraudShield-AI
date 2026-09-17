@@ -25,6 +25,7 @@ class Settings(BaseSettings):
 
     # Gemini API
     GEMINI_API_KEY: Optional[str] = None
+    GEMINI_MODEL: str = "gemini-3.6-flash"
 
     # Risk Engine Thresholds
     RISK_THRESHOLD_MEDIUM: float = 30.0
@@ -39,7 +40,11 @@ class Settings(BaseSettings):
     ]
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=[
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))), ".env"),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".env"),
+            ".env"
+        ],
         case_sensitive=True,
         extra="ignore"
     )

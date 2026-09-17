@@ -101,50 +101,73 @@ def generate_copilot_response(
             "suggested_followups": ["Summarize evidence", "Explain top risk factors", "What should I investigate next?"]
         }
 
+    tx_id = evidence.get("transaction_id") or "N/A"
+    amt = evidence.get("amount") or "N/A"
+    ts = evidence.get("timestamp") or "N/A"
+    score = float(evidence.get("risk_score") if evidence.get("risk_score") is not None else 0.0)
+    level = str(evidence.get("risk_level") or "UNKNOWN")
+    prob = float(evidence.get("fraud_probability") if evidence.get("fraud_probability") is not None else 0.0)
+    anomaly = float(evidence.get("anomaly_score") if evidence.get("anomaly_score") is not None else 0.0)
+    factors = evidence.get("top_risk_factors") or []
+
     # Format context prompt
-    context_str = f"""
+    if tx_id != "N/A":
+        context_str = f"""
 STRICT EVIDENCE CONTEXT FOR TRANSACTION:
-- Transaction ID: {evidence.get('transaction_id')}
-- Amount: {evidence.get('amount')}
-- Timestamp: {evidence.get('timestamp')}
-- Risk Score: {evidence.get('risk_score')}/100 ({evidence.get('risk_level')})
-- Fraud Model Probability: {evidence.get('fraud_probability'):.1%}
-- Anomaly Detector Score: {evidence.get('anomaly_score'):.2f}
+- Transaction ID: {tx_id}
+- Amount: {amt}
+- Timestamp: {ts}
+- Risk Score: {score:.0f}/100 ({level})
+- Fraud Model Probability: {prob:.1%}
+- Anomaly Detector Score: {anomaly:.2f}
 - Primary Flagged Risk Factors (SHAP):
 """
-    for factor in evidence.get("top_risk_factors", []):
-        context_str += f"  * {factor.get('feature_name', 'Factor')}: {factor.get('explanation', '')} (Value: {factor.get('feature_value')})\n"
+        for factor in factors:
+            context_str += f"  * {factor.get('feature_name', 'Factor')}: {factor.get('explanation', '')} (Value: {factor.get('feature_value')})\n"
+    else:
+        context_str = "CONTEXT: General fraud investigation assistance session (no specific transaction currently loaded).\n"
 
     context_str += f"\nANALYST QUERY: {message}\n"
 
     # Attempt Gemini API call
     if api_key:
-        try:
-            try:
-                from google import genai
-                client = genai.Client(api_key=api_key)
-                response = client.models.generate_content(
-                    model="gemini-2.0-flash",
-                    contents=[SYSTEM_PROMPT, context_str]
-                )
-                text = response.text
-            except Exception:
-                import google.generativeai as genai_old
-                genai_old.configure(api_key=api_key)
-                model = genai_old.GenerativeModel("gemini-1.5-flash", system_instruction=SYSTEM_PROMPT)
-                response = model.generate_content(context_str)
-                text = response.text
+        models_to_try = []
+        configured_model = getattr(settings, "GEMINI_MODEL", None) or os.getenv("GEMINI_MODEL")
+        if configured_model:
+            models_to_try.append(configured_model)
+        for fallback_m in ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-pro-latest", "gemini-2.5-flash", "gemini-1.5-flash"]:
+            if fallback_m not in models_to_try:
+                models_to_try.append(fallback_m)
 
-            return {
-                "response": text,
-                "suggested_followups": [
-                    "What customer behavior pattern stands out?",
-                    "What device or location anomalies were detected?",
-                    "Summarize recommendation for analyst resolution"
-                ]
-            }
-        except Exception as e:
-            logger.warning(f"Gemini API call failed, falling back to structured synthesis: {e}")
+        for model_name in models_to_try:
+            try:
+                try:
+                    from google import genai
+                    client = genai.Client(api_key=api_key)
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=[SYSTEM_PROMPT, context_str]
+                    )
+                    text = response.text
+                except Exception:
+                    import google.generativeai as genai_old
+                    genai_old.configure(api_key=api_key)
+                    model = genai_old.GenerativeModel(model_name, system_instruction=SYSTEM_PROMPT)
+                    response = model.generate_content(context_str)
+                    text = response.text
+
+                if text:
+                    return {
+                        "response": text,
+                        "suggested_followups": [
+                            "What customer behavior pattern stands out?",
+                            "What device or location anomalies were detected?",
+                            "Summarize recommendation for analyst resolution"
+                        ]
+                    }
+            except Exception as e:
+                logger.debug(f"Gemini API attempt with {model_name} failed: {e}")
+                continue
 
     # Structured rule-assisted synthesis fallback
     text_parts = []

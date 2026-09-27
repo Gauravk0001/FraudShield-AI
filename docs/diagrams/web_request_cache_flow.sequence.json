@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Web Request: Read-Through Cache & Database Fallback",
+    "output": "docs/diagrams/web_request_cache_flow.html",
+    "viewBox": [1080, 590],
+    "column_fit": "spread",
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "ingress-auth",
+        "label": "Ingress & Authentication",
+        "focus": ["browser", "gateway", "auth"],
+        "note": "Browser dispatches HTTPS request; API gateway validates JWT token and RBAC claims."
+      },
+      {
+        "id": "cache-miss-fallback",
+        "label": "Cache Check & Miss Fallback",
+        "focus": ["gateway", "redis", "postgres"],
+        "note": "Gateway queries Redis for key; on cache miss, it queries PostgreSQL authoritative store."
+      },
+      {
+        "id": "fill-cache-response",
+        "label": "Cache Fill & Client Response",
+        "focus": ["postgres", "gateway", "redis", "audit", "browser"],
+        "note": "Authoritative data is populated into Redis with TTL and returned to the browser."
+      }
+    ]
+  },
+  "participants": [
+    { "id": "browser", "type": "external", "label": "Client Browser", "sublabel": "React Web App" },
+    { "id": "gateway", "type": "backend", "label": "FastAPI Gateway", "sublabel": "REST & Middleware" },
+    { "id": "auth", "type": "security", "label": "Auth Engine", "sublabel": "JWT & Argon2id" },
+    { "id": "redis", "type": "database", "label": "Redis Cache", "sublabel": "In-Memory Store :6379" },
+    { "id": "postgres", "type": "database", "label": "PostgreSQL DB", "sublabel": "Primary Store :5432" },
+    { "id": "audit", "type": "messagebus", "label": "Audit Trail", "sublabel": "Immutable Log" }
+  ],
+  "segments": [
+    { "from": 145, "to": 245, "label": "1. Ingress & Auth" },
+    { "from": 255, "to": 395, "label": "2. Cache Miss & Query" },
+    { "from": 405, "to": 510, "label": "3. Fill Cache & Return" }
+  ],
+  "messages": [
+    { "id": "req-init", "from": "browser", "to": "gateway", "y": 160, "label": "GET /api/v1/transactions/tx_9812", "variant": "emphasis" },
+    { "id": "auth-check", "from": "gateway", "to": "auth", "y": 195, "label": "verify Bearer JWT", "variant": "security" },
+    { "id": "auth-ok", "from": "auth", "to": "gateway", "y": 230, "label": "200 claims valid", "variant": "return" },
+    { "id": "cache-get", "from": "gateway", "to": "redis", "y": 275, "label": "GET tx:tx_9812", "variant": "default" },
+    { "id": "cache-nil", "from": "redis", "to": "gateway", "y": 310, "label": "(nil) Cache Miss", "variant": "return" },
+    { "id": "db-query", "from": "gateway", "to": "postgres", "y": 345, "label": "SELECT * FROM transactions WHERE id = $1", "variant": "emphasis" },
+    { "id": "db-result", "from": "postgres", "to": "gateway", "y": 380, "label": "Record rows returned", "variant": "return" },
+    { "id": "cache-set", "from": "gateway", "to": "redis", "y": 415, "label": "SETEX tx:tx_9812 300 JSON", "variant": "dashed" },
+    { "id": "audit-emit", "from": "gateway", "to": "audit", "y": 450, "label": "log cache_miss event", "variant": "dashed" },
+    { "id": "http-resp", "from": "gateway", "to": "browser", "y": 485, "label": "200 OK (Payload JSON)", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "browser", "from": 155, "to": 490, "type": "frontend" },
+    { "participant": "gateway", "from": 160, "to": 485, "type": "backend" },
+    { "participant": "auth", "from": 190, "to": 235, "type": "security" },
+    { "participant": "redis", "from": 270, "to": 315, "type": "database" },
+    { "participant": "postgres", "from": 340, "to": 385, "type": "database" },
+    { "participant": "redis", "from": 410, "to": 425, "type": "database" },
+    { "participant": "audit", "from": 445, "to": 460, "type": "messagebus" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Cache-Aside Lifecycle",
+      "items": [
+        "Client browser invokes FastAPI Gateway with X-Request-ID and Bearer JWT",
+        "Gateway verifies identity and attempts read-through lookup from Redis key store",
+        "Authoritative query executes against PostgreSQL only upon confirmed cache miss"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Fallback & Consistency",
+      "items": [
+        "Cache misses fall back cleanly to PostgreSQL primary with row-level tenant security",
+        "Fresh record is written back to Redis with explicit TTL (SETEX) to populate hot cache",
+        "Preserves authoritative transaction record integrity while maximizing sub-millisecond warm hits"
+      ]
+    },
+    {
+      "dot": "orange",
+      "title": "Observability & Audit",
+      "items": [
+        "Asynchronous audit log event is recorded with distributed request correlation ID",
+        "HTTP 200 payload returns to client with sub-15ms response latency"
+      ]
+    }
+  ]
+}

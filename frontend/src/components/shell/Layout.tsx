@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { Footer } from './Footer';
 import type { User } from '../../types';
 import { apiRequest } from '../../services/api';
 
@@ -22,6 +23,7 @@ export const Layout: React.FC = () => {
         <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
           <Outlet context={{ user }} />
         </main>
+        <Footer />
       </div>
     </div>
   );

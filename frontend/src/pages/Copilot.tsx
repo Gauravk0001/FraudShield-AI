@@ -1,29 +1,65 @@
 import React, { useState, useEffect } from 'react';
-import { useOutletContext, useLocation } from 'react-router-dom';
-import { Sparkles, Search } from 'lucide-react';
+import { useOutletContext, useLocation, useSearchParams } from 'react-router-dom';
+import { Sparkles, Search, X } from 'lucide-react';
 import { CopilotChat } from '../components/copilot/CopilotChat';
 import type { User } from '../types';
 
 export const CopilotPage: React.FC = () => {
   const { user } = useOutletContext<{ user: User | null }>();
   const location = useLocation();
-  const stateTxId = (location.state as any)?.transactionId || '';
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [targetTxId, setTargetTxId] = useState(stateTxId);
-  const [activeTxId, setActiveTxId] = useState<string | undefined>(stateTxId || undefined);
+  // Extract from query params (?transactionId=..., ?tx=..., ?transaction_id=...) or route state
+  const queryTxId = searchParams.get('transactionId') || searchParams.get('tx') || searchParams.get('transaction_id') || '';
+  const queryInvId = searchParams.get('investigationId') || searchParams.get('inv') || '';
+  const stateTxId = (location.state as any)?.transactionId || (location.state as any)?.txId || '';
+  const stateInvId = (location.state as any)?.investigationId || '';
+
+  const initialTxId = stateTxId || queryTxId || '';
+  const initialInvId = stateInvId || queryInvId || '';
+
+  const [targetTxId, setTargetTxId] = useState(initialTxId);
+  const [activeTxId, setActiveTxId] = useState<string | undefined>(initialTxId || undefined);
+  const [activeInvId, setActiveInvId] = useState<string | undefined>(initialInvId || undefined);
 
   useEffect(() => {
-    if (stateTxId) {
-      setTargetTxId(stateTxId);
-      setActiveTxId(stateTxId);
+    const nextTxId = (location.state as any)?.transactionId || (location.state as any)?.txId || searchParams.get('transactionId') || searchParams.get('tx') || searchParams.get('transaction_id') || '';
+    const nextInvId = (location.state as any)?.investigationId || searchParams.get('investigationId') || searchParams.get('inv') || '';
+    if (nextTxId) {
+      setTargetTxId(nextTxId);
+      setActiveTxId(nextTxId);
     }
-  }, [stateTxId]);
+    if (nextInvId) {
+      setActiveInvId(nextInvId);
+    }
+  }, [location.state, searchParams]);
 
   const handleSetContext = (e: React.FormEvent) => {
     e.preventDefault();
-    if (targetTxId.trim()) {
-      setActiveTxId(targetTxId.trim());
+    const clean = targetTxId.trim();
+    if (clean) {
+      setActiveTxId(clean);
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.set('transactionId', clean);
+        return next;
+      });
     }
+  };
+
+  const handleClearContext = () => {
+    setTargetTxId('');
+    setActiveTxId(undefined);
+    setActiveInvId(undefined);
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.delete('transactionId');
+      next.delete('tx');
+      next.delete('transaction_id');
+      next.delete('investigationId');
+      next.delete('inv');
+      return next;
+    });
   };
 
   const isRiskManager = user?.role === 'RISK_MANAGER';
@@ -52,12 +88,22 @@ export const CopilotPage: React.FC = () => {
               value={targetTxId}
               onChange={e => setTargetTxId(e.target.value)}
               placeholder="Enter Transaction ID..."
-              className="pl-9 pr-3 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-btn text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
+              className="pl-9 pr-8 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-btn text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 w-60"
             />
+            {targetTxId && (
+              <button
+                type="button"
+                onClick={handleClearContext}
+                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                title="Clear Context"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
           <button
             type="submit"
-            className="px-3 py-1.5 text-xs font-semibold bg-slate-900 dark:bg-slate-800 text-white rounded-btn hover:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
+            className="px-3 py-1.5 text-xs font-semibold bg-slate-900 dark:bg-slate-800 text-white rounded-btn hover:bg-slate-800 dark:hover:bg-slate-700 transition-colors shadow-xs"
           >
             Load Context
           </button>
@@ -66,7 +112,12 @@ export const CopilotPage: React.FC = () => {
 
       {/* Main Chat Container */}
       <div className="flex-1 min-h-0">
-        <CopilotChat transactionId={activeTxId} userRole={user?.role} />
+        <CopilotChat
+          transactionId={activeTxId}
+          investigationId={activeInvId}
+          userRole={user?.role}
+          onClearContext={activeTxId ? handleClearContext : undefined}
+        />
       </div>
     </div>
   );

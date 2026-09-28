@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import {
   AlertTriangle, Filter, RefreshCw, Search, ShieldAlert,
-  BarChart2, CheckCircle2, Plus, ChevronRight, Clock, X,
+  BarChart2, CheckCircle2, Plus, ChevronRight, Clock, X, Bot
 } from 'lucide-react';
 import { apiRequest } from '../services/api';
 import { Card } from '../components/ui/Card';
@@ -49,8 +49,9 @@ const TriagePanel: React.FC<{
   onClose: () => void;
   onAcknowledge: (id: string) => void;
   onEscalate: (alert: Alert) => void;
+  onAskCopilot: (alert: Alert) => void;
   isActing: boolean;
-}> = ({ alert, onClose, onAcknowledge, onEscalate, isActing }) => (
+}> = ({ alert, onClose, onAcknowledge, onEscalate, onAskCopilot, isActing }) => (
   <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-4">
     <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-modal shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 p-6 max-h-[90vh] overflow-y-auto">
       <div className="flex items-center justify-between">
@@ -127,34 +128,45 @@ const TriagePanel: React.FC<{
       )}
 
       {/* Triage Actions */}
-      {alert.status === 'NEW' && (
-        <div className="flex gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => onAcknowledge(alert.id)}
-            isLoading={isActing}
-          >
-            <CheckCircle2 className="w-4 h-4 mr-1.5" />
-            Acknowledge
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            className="flex-1"
-            onClick={() => onEscalate(alert)}
-            isLoading={isActing}
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            Open Investigation
-          </Button>
-        </div>
-      )}
+      <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 min-w-[120px]"
+          onClick={() => onAskCopilot(alert)}
+        >
+          <Bot className="w-4 h-4 mr-1.5 text-blue-600 dark:text-blue-400" />
+          Ask Copilot
+        </Button>
+        {alert.status === 'NEW' && (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 min-w-[120px]"
+              onClick={() => onAcknowledge(alert.id)}
+              isLoading={isActing}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-1.5" />
+              Acknowledge
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              className="flex-1 min-w-[120px]"
+              onClick={() => onEscalate(alert)}
+              isLoading={isActing}
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              Open Investigation
+            </Button>
+          </>
+        )}
+      </div>
 
       {alert.status !== 'NEW' && (
-        <div className="text-xs text-center text-slate-500 dark:text-slate-400 py-2">
-          Alert is <span className="font-semibold text-slate-700 dark:text-slate-300">{alert.status}</span> — no triage actions available.
+        <div className="text-xs text-center text-slate-500 dark:text-slate-400 py-1">
+          Alert is <span className="font-semibold text-slate-700 dark:text-slate-300">{alert.status}</span>
         </div>
       )}
     </div>
@@ -165,6 +177,7 @@ const TriagePanel: React.FC<{
 
 export const AlertsPage: React.FC = () => {
   const { user } = useOutletContext<{ user: User | null }>();
+  const navigate = useNavigate();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [statusFilter, setStatusFilter] = useState<AlertStatus | 'ALL'>('ALL');
   const [severityFilter, setSeverityFilter] = useState<RiskLevel | 'ALL'>('ALL');
@@ -177,6 +190,11 @@ export const AlertsPage: React.FC = () => {
 
   const isRiskManager = user?.role === 'RISK_MANAGER';
   const isAnalyst = user?.role === 'FRAUD_ANALYST' || user?.role === 'ADMIN';
+
+  const handleAskCopilot = (alert: Alert) => {
+    setTriageAlert(null);
+    navigate('/copilot', { state: { transactionId: alert.transaction_id } });
+  };
 
   const fetchAlerts = async () => {
     setLoading(true);
@@ -430,6 +448,7 @@ export const AlertsPage: React.FC = () => {
           onClose={() => setTriageAlert(null)}
           onAcknowledge={handleAcknowledge}
           onEscalate={handleEscalate}
+          onAskCopilot={handleAskCopilot}
           isActing={isActing}
         />
       )}

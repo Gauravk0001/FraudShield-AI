@@ -150,7 +150,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ userRole = 'FRAUD_ANALYST' }) 
             <span className="font-semibold text-slate-800 dark:text-slate-300">Engine: Active</span>
           </div>
           <span className="block text-[11px] text-slate-600 dark:text-slate-400">XGBoost + Isolation Forest</span>
-          <span className="block text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">v1.0.0 Enterprise</span>
+          <span className="block text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Production Engine</span>
+        </div>
+
+        <div className="mt-2.5 px-1 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+          <NavLink to="/terms" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium">
+            Terms
+          </NavLink>
+          <span>&bull;</span>
+          <NavLink to="/privacy" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium">
+            Privacy
+          </NavLink>
+          <span>&bull;</span>
+          <span>v1.0</span>
         </div>
       </div>
     </aside>

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import {
   CheckCircle2, Plus, UserCheck, Search, ShieldCheck,
   Clock, AlertTriangle, BarChart2, Zap,
-  Smartphone, MapPin, Activity,
+  Smartphone, MapPin, Activity, Bot
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -52,6 +52,7 @@ const AnalystWorkspace: React.FC<{
   setError: (e: string | null) => void;
   isReadOnly: boolean;
 }> = ({ investigations, selectedInv, setSelectedInv, onRefresh, error, setError, isReadOnly }) => {
+  const navigate = useNavigate();
   const [noteText, setNoteText] = useState('');
   const [decision, setDecision] = useState<InvestigationDecision>('CONFIRMED_FRAUD');
   const [reason, setReason] = useState('');
@@ -60,6 +61,16 @@ const AnalystWorkspace: React.FC<{
 
   const shapFactors: ShapFactor[] =
     selectedInv?.transaction?.risk_score?.explanation?.top_factors ?? [];
+
+  const handleAskCopilot = () => {
+    if (!selectedInv) return;
+    navigate('/copilot', {
+      state: {
+        transactionId: selectedInv.transaction?.transaction_id || selectedInv.transaction_id,
+        investigationId: selectedInv.id
+      }
+    });
+  };
 
   const handleClaim = async () => {
     if (!selectedInv || isReadOnly) return;
@@ -194,20 +205,26 @@ const AnalystWorkspace: React.FC<{
                       )}
                     </h3>
                   </div>
-                  {!isReadOnly && (
-                    <div className="flex items-center gap-2">
-                      {selectedInv.status === 'OPEN' && (
-                        <Button variant="primary" size="sm" onClick={handleClaim}>
-                          <UserCheck className="w-4 h-4 mr-1.5" /> Claim Case
-                        </Button>
-                      )}
-                      {selectedInv.status !== 'RESOLVED' && (
-                        <Button variant="danger" size="sm" onClick={() => setShowResolveModal(true)}>
-                          <CheckCircle2 className="w-4 h-4 mr-1.5" /> Record Decision
-                        </Button>
-                      )}
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handleAskCopilot}>
+                      <Bot className="w-4 h-4 mr-1.5 text-blue-600 dark:text-blue-400" />
+                      Ask Copilot
+                    </Button>
+                    {!isReadOnly && (
+                      <>
+                        {selectedInv.status === 'OPEN' && (
+                          <Button variant="primary" size="sm" onClick={handleClaim}>
+                            <UserCheck className="w-4 h-4 mr-1.5" /> Claim Case
+                          </Button>
+                        )}
+                        {selectedInv.status !== 'RESOLVED' && (
+                          <Button variant="danger" size="sm" onClick={() => setShowResolveModal(true)}>
+                            <CheckCircle2 className="w-4 h-4 mr-1.5" /> Record Decision
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 {/* Evidence Summary Grid */}

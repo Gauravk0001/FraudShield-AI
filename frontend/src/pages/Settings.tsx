@@ -259,6 +259,26 @@ export const SettingsPage: React.FC = () => {
               </button>
             );
           })}
+
+          <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 px-2 space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">
+              Legal &amp; Compliance
+            </span>
+            <Link
+              to="/terms"
+              className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 py-1 font-medium transition-colors"
+            >
+              <span>Terms &amp; Conditions</span>
+              <span className="text-[10px] text-slate-400">&rarr;</span>
+            </Link>
+            <Link
+              to="/privacy"
+              className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 py-1 font-medium transition-colors"
+            >
+              <span>Privacy Policy</span>
+              <span className="text-[10px] text-slate-400">&rarr;</span>
+            </Link>
+          </div>
         </div>
 
         {/* Tab Content Column */}

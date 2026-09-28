@@ -9,10 +9,16 @@ interface CopilotChatProps {
   investigationId?: string;
   transactionId?: string;
   userRole?: UserRole;
+  onClearContext?: () => void;
 }
 
-export const CopilotChat: React.FC<CopilotChatProps> = ({ investigationId, transactionId, userRole = 'FRAUD_ANALYST' }) => {
-  const getRoleFollowups = (role: UserRole) => {
+export const CopilotChat: React.FC<CopilotChatProps> = ({
+  investigationId,
+  transactionId,
+  userRole = 'FRAUD_ANALYST',
+  onClearContext
+}) => {
+  const getRoleFollowups = (role: UserRole, txId?: string) => {
     if (role === 'RISK_MANAGER') {
       return [
         'Summarize current fraud risk trends',
@@ -21,17 +27,28 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ investigationId, trans
         'Explain model performance metrics'
       ];
     }
+    if (txId) {
+      return [
+        'Why was this transaction flagged?',
+        'What should I investigate next?',
+        'Summarize evidence',
+        'Explain SHAP risk factors'
+      ];
+    }
     return [
-      'Why was this transaction flagged?',
-      'Summarize evidence',
-      'What should I investigate next?',
-      'Explain SHAP risk factors'
+      'What is SHAP?',
+      'How does the risk engine calculate scores?',
+      'What are the fraud risk thresholds?',
+      'How does Isolation Forest work?'
     ];
   };
 
-  const getRoleGreeting = (role: UserRole) => {
+  const getRoleGreeting = (role: UserRole, txId?: string) => {
     if (role === 'RISK_MANAGER') {
       return 'Hello Risk Manager. I am FraudShield Copilot. Ask me about overall fraud portfolio trends, model calibration metrics, or backlog aging.';
+    }
+    if (txId) {
+      return `Active investigation context loaded for transaction \`${txId}\`. Click a suggested action below or ask me about risk signals, SHAP contributions, or resolution guidance.`;
     }
     return 'Hello Analyst. I am FraudShield Copilot. Select a suggested prompt or ask me any question regarding transaction evidence, SHAP risk factors, or investigation recommendations.';
   };
@@ -39,13 +56,26 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ investigationId, trans
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: getRoleGreeting(userRole)
+      content: getRoleGreeting(userRole, transactionId)
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [suggestedFollowups, setSuggestedFollowups] = useState<string[]>(getRoleFollowups(userRole));
+  const [suggestedFollowups, setSuggestedFollowups] = useState<string[]>(getRoleFollowups(userRole, transactionId));
   const [error, setError] = useState<string | null>(null);
+
+  // Sync state when transactionId changes
+  useEffect(() => {
+    setSuggestedFollowups(getRoleFollowups(userRole, transactionId));
+    if (transactionId) {
+      setMessages([
+        {
+          role: 'assistant',
+          content: getRoleGreeting(userRole, transactionId)
+        }
+      ]);
+    }
+  }, [transactionId, userRole]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -64,25 +94,71 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ investigationId, trans
     setError(null);
     setInputMessage('');
 
-    const newMessages: ChatMessage[] = [...messages, { role: 'user', content: text }];
+    const userMsg: ChatMessage = { role: 'user', content: text };
+    const newMessages: ChatMessage[] = [...messages, userMsg];
     setMessages(newMessages);
     setLoading(true);
 
-    try {
-      const res = await copilotApi.chat({
-        investigation_id: investigationId,
-        transaction_id: transactionId,
-        message: text,
-        history: newMessages.slice(-6)
-      });
+    let assistantText = '';
+    let hasCreatedAssistantMessage = false;
 
-      setMessages(prev => [...prev, { role: 'assistant', content: res.response }]);
-      if (res.suggested_followups && res.suggested_followups.length > 0) {
-        setSuggestedFollowups(res.suggested_followups);
-      }
+    try {
+      await copilotApi.chatStream(
+        {
+          investigation_id: investigationId,
+          transaction_id: transactionId,
+          message: text,
+          history: newMessages.slice(-6)
+        },
+        (chunk: string) => {
+          assistantText += chunk;
+          if (!hasCreatedAssistantMessage) {
+            hasCreatedAssistantMessage = true;
+            setMessages(prev => [...prev, { role: 'assistant', content: assistantText }]);
+          } else {
+            setMessages(prev => {
+              const updated = [...prev];
+              updated[updated.length - 1] = { role: 'assistant', content: assistantText };
+              return updated;
+            });
+          }
+        },
+        (followups: string[]) => {
+          if (followups && followups.length > 0) {
+            setSuggestedFollowups(followups);
+          }
+          setLoading(false);
+        },
+        async (err: any) => {
+          // If streaming encounters an error, fallback seamlessly to standard REST endpoint
+          try {
+            const res = await copilotApi.chat({
+              investigation_id: investigationId,
+              transaction_id: transactionId,
+              message: text,
+              history: newMessages.slice(-6)
+            });
+            if (!hasCreatedAssistantMessage) {
+              setMessages(prev => [...prev, { role: 'assistant', content: res.response }]);
+            } else {
+              setMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { role: 'assistant', content: res.response };
+                return updated;
+              });
+            }
+            if (res.suggested_followups && res.suggested_followups.length > 0) {
+              setSuggestedFollowups(res.suggested_followups);
+            }
+          } catch (fallbackErr: any) {
+            setError(fallbackErr.message || err.message || 'Failed to communicate with Copilot API');
+          } finally {
+            setLoading(false);
+          }
+        }
+      );
     } catch (err: any) {
-      setError(err.message || 'Failed to communicate with Copilot API');
-    } finally {
+      setError(err.message || 'Failed to initiate Copilot stream');
       setLoading(false);
     }
   };
@@ -106,9 +182,25 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ investigationId, trans
           </div>
         </div>
 
-        {transactionId && (
-          <span className="text-xs font-mono bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-md">
-            Tx: {transactionId}
+        {transactionId ? (
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-mono font-bold bg-blue-50 dark:bg-blue-950/70 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Context: {transactionId}
+            </span>
+            {onClearContext && (
+              <button
+                onClick={onClearContext}
+                className="text-[11px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline px-1"
+                title="Unload current transaction context"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        ) : (
+          <span className="text-xs font-medium text-slate-400 dark:text-slate-500 px-2 py-1 bg-slate-100 dark:bg-slate-800/80 rounded-md border border-slate-200 dark:border-slate-700">
+            No Context Loaded
           </span>
         )}
       </div>

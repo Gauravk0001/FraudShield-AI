@@ -20,12 +20,16 @@ import { ModelsPage } from './pages/Models';
 import { AuditLogsPage } from './pages/AuditLogs';
 import { AlertsPage } from './pages/Alerts';
 import { SettingsPage } from './pages/Settings';
+import { TermsPage } from './pages/Terms';
+import { PrivacyPage } from './pages/Privacy';
 
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         
         <Route
           path="/"

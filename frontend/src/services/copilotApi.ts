@@ -1,4 +1,4 @@
-import { apiRequest, getStoredToken } from './api';
+import { apiRequest, getStoredToken, API_BASE } from './api';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -35,7 +35,7 @@ export const copilotApi = {
   ): Promise<void> => {
     const token = getStoredToken();
     try {
-      const response = await fetch('/api/v1/copilot/chat/stream', {
+      const response = await fetch(`${API_BASE}/copilot/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -56,3 +56,5 @@ models_artifacts/*.pkl.bak
 # OS
 .DS_Store
 Thumbs.db
+docs/*.png
+docs/fraudshield-architecture.visual-check.*

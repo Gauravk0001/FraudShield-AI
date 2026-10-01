@@ -1,3 +1,4 @@
+import os
 import json
 from typing import Dict, Any, Optional
 from app.core.config import settings
@@ -20,14 +21,23 @@ def get_redis_client():
     if not _connection_attempted:
         _connection_attempted = True
         try:
-            client = redis.Redis(
-                host=settings.REDIS_HOST,
-                port=settings.REDIS_PORT,
-                db=settings.REDIS_DB,
-                decode_responses=True,
-                socket_timeout=0.2,
-                socket_connect_timeout=0.2
-            )
+            redis_url = settings.REDIS_URL or os.getenv("REDIS_URL")
+            if redis_url:
+                client = redis.from_url(
+                    redis_url,
+                    decode_responses=True,
+                    socket_timeout=1.0,
+                    socket_connect_timeout=1.0
+                )
+            else:
+                client = redis.Redis(
+                    host=settings.REDIS_HOST,
+                    port=settings.REDIS_PORT,
+                    db=settings.REDIS_DB,
+                    decode_responses=True,
+                    socket_timeout=0.5,
+                    socket_connect_timeout=0.5
+                )
             client.ping()
             _redis_client = client
             logger.info("Connected to Redis event bus")

@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "FraudShield AI Architecture",
+    "output": "fraudshield-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "full-pipeline",
+        "label": "Full Transaction Pipeline",
+        "focus": ["analyst_ui", "api_gateway", "feature_eng", "xgb_model", "iso_forest", "risk_engine", "realtime_bus", "storage_db"],
+        "note": "Follow real-time transaction ingestion through causal feature generation, dual-model scoring, and alert broadcast."
+      },
+      {
+        "id": "dual-ml",
+        "label": "Dual-Model ML & Risk Engine",
+        "focus": ["feature_eng", "xgb_model", "iso_forest", "risk_engine", "shap_explainer"],
+        "note": "Calibrated XGBoost classifier and Isolation Forest anomaly detector feed the deterministic composite risk engine."
+      },
+      {
+        "id": "analyst-copilot",
+        "label": "Investigation & AI Copilot",
+        "focus": ["analyst_ui", "api_gateway", "realtime_bus", "copilot_gemini", "storage_db"],
+        "note": "Analyst workspace consumes live WebSocket alerts and collaborates with the sanitized Gemini Copilot for case resolution."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "analyst_ui",
+      "type": "frontend",
+      "label": "Analyst UI",
+      "sublabel": "React 19 + TS",
+      "pos": [30, 240],
+      "size": [130, 60],
+      "brand": "react"
+    },
+    {
+      "id": "api_gateway",
+      "type": "backend",
+      "label": "FastAPI Gateway",
+      "sublabel": "Auth & RBAC / RLS",
+      "pos": [230, 240],
+      "size": [130, 60],
+      "brand": "fastapi"
+    },
+    {
+      "id": "feature_eng",
+      "type": "backend",
+      "label": "Feature Engine",
+      "sublabel": "Velocity & Deviation",
+      "pos": [430, 240],
+      "size": [130, 60]
+    },
+    {
+      "id": "xgb_model",
+      "type": "backend",
+      "label": "Calibrated XGBoost",
+      "sublabel": "Supervised P(Fraud)",
+      "pos": [610, 130],
+      "size": [130, 60]
+    },
+    {
+      "id": "iso_forest",
+      "type": "backend",
+      "label": "Isolation Forest",
+      "sublabel": "Anomaly Detector",
+      "pos": [610, 350],
+      "size": [130, 60]
+    },
+    {
+      "id": "risk_engine",
+      "type": "backend",
+      "label": "Risk Engine",
+      "sublabel": "Composite Scoring",
+      "pos": [800, 240],
+      "size": [130, 60]
+    },
+    {
+      "id": "shap_explainer",
+      "type": "backend",
+      "label": "TreeSHAP Explainer",
+      "sublabel": "Local Attributions",
+      "pos": [1000, 130],
+      "size": [130, 60]
+    },
+    {
+      "id": "realtime_bus",
+      "type": "messagebus",
+      "label": "Real-Time Bus",
+      "sublabel": "Redis PubSub & WS",
+      "pos": [1000, 240],
+      "size": [130, 60]
+    },
+    {
+      "id": "copilot_gemini",
+      "type": "external",
+      "label": "Gemini Copilot",
+      "sublabel": "Investigation Assistant",
+      "pos": [1000, 350],
+      "size": [130, 60]
+    },
+    {
+      "id": "storage_db",
+      "type": "database",
+      "label": "Database Store",
+      "sublabel": "SQLAlchemy + RLS",
+      "pos": [800, 440],
+      "size": [130, 60]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "FraudShield Platform Services",
+      "wraps": ["api_gateway", "feature_eng", "xgb_model", "iso_forest", "risk_engine", "shap_explainer", "realtime_bus", "storage_db"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "ui-to-gateway",
+      "from": "analyst_ui",
+      "to": "api_gateway",
+      "label": "HTTPS / WSS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "gateway-to-features",
+      "from": "api_gateway",
+      "to": "feature_eng",
+      "label": "stream tx"
+    },
+    {
+      "id": "features-to-xgb",
+      "from": "feature_eng",
+      "to": "xgb_model",
+      "label": "features",
+      "fromSide": "top",
+      "toSide": "left"
+    },
+    {
+      "id": "features-to-iso",
+      "from": "feature_eng",
+      "to": "iso_forest",
+      "label": "features",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "xgb-to-risk",
+      "from": "xgb_model",
+      "to": "risk_engine",
+      "label": "P(Fraud)",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "iso-to-risk",
+      "from": "iso_forest",
+      "to": "risk_engine",
+      "label": "anomaly",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "risk-to-shap",
+      "from": "risk_engine",
+      "to": "shap_explainer",
+      "label": "explain",
+      "fromSide": "top",
+      "toSide": "left"
+    },
+    {
+      "id": "risk-to-bus",
+      "from": "risk_engine",
+      "to": "realtime_bus",
+      "label": "alerts >=30",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "risk-to-copilot",
+      "from": "risk_engine",
+      "to": "copilot_gemini",
+      "label": "case context",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "risk-to-db",
+      "from": "risk_engine",
+      "to": "storage_db",
+      "label": "audit log",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 50
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Ingestion & Security",
+      "items": [
+        "React 19 operations workspace with real-time WebSocket feeds",
+        "FastAPI Gateway with Argon2id, JWT auth, and Row-Level Security"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Dual ML & Composite Scoring",
+      "items": [
+        "Calibrated XGBoost classifier combined with Isolation Forest anomaly detection",
+        "Deterministic composite risk engine: 45% ML + 35% Rules + 20% Anomaly"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Explainability & Copilot",
+      "items": [
+        "TreeSHAP exact mathematical local feature attributions for every alert",
+        "Sanitized Gemini Copilot for guided investigation summaries & checklists"
+      ]
+    }
+  ]
+}

@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
     container_name: fraudshield_postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-fraudshield}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fraudshield_secret_pass}
@@ -17,26 +16,33 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 5s
 
   redis:
     image: redis:7-alpine
     container_name: fraudshield_redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 5s
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: fraudshield_backend
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
       - POSTGRES_SERVER=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_USER=${POSTGRES_USER:-fraudshield}
@@ -44,26 +50,36 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-fraudshield_db}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_DB=0
       - SECRET_KEY=${SECRET_KEY:-change_this_super_secret_jwt_key_in_production}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.0-flash}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./backend:/app
-      - ./models_artifacts:/app/models_artifacts
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: fraudshield_frontend
+    restart: unless-stopped
     ports:
       - "3000:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   postgres_data:
+  redis_data:
+

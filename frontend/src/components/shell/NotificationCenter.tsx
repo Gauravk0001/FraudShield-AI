@@ -56,14 +56,19 @@ export const NotificationCenter: React.FC = () => {
     let reconnectTimeout: number | undefined;
     let retryCount = 0;
     let isDisposed = false;
-
     const connectWs = () => {
       if (isDisposed) return;
       try {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        // In local development, backend runs on port 8000
-        const host = window.location.port === '5173' ? `${window.location.hostname}:8000` : window.location.host;
-        const wsUrl = `${protocol}//${host}/ws/alerts?token=${encodeURIComponent(token)}`;
+        let wsUrl = '';
+        if (import.meta.env.VITE_WS_URL) {
+          const wsBase = import.meta.env.VITE_WS_URL.replace(/\/$/, '');
+          wsUrl = `${wsBase}/ws/alerts?token=${encodeURIComponent(token)}`;
+        } else {
+          const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+          // In local development, backend runs on port 8000
+          const host = window.location.port === '5173' ? `${window.location.hostname}:8000` : window.location.host;
+          wsUrl = `${protocol}//${host}/ws/alerts?token=${encodeURIComponent(token)}`;
+        }
 
         socket = new WebSocket(wsUrl);
         wsRef.current = socket;

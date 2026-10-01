@@ -36,10 +36,11 @@ class RequestIDCorrelationMiddleware(BaseHTTPMiddleware):
 app.add_middleware(RequestIDCorrelationMiddleware)
 
 # Set up CORS middleware
-if settings.BACKEND_CORS_ORIGINS:
+origins = settings.cors_origins
+if origins:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origins=[str(origin) for origin in origins],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

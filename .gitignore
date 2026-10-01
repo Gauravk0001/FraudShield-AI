@@ -58,3 +58,4 @@ models_artifacts/*.pkl.bak
 Thumbs.db
 docs/*.png
 docs/fraudshield-architecture.visual-check.*
+cloudflared.exe

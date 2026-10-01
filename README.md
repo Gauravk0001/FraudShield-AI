@@ -1,6 +1,7 @@
 # FraudShield AI — Autonomous Real-Time Fraud Intelligence & Investigation Platform
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+[![Deployment](https://img.shields.io/badge/Deployment-Live-brightgreen.svg)]()
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-blue.svg)]()
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-teal.svg)]()
 [![React](https://img.shields.io/badge/React-19.0-blue.svg)]()
@@ -8,6 +9,40 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)]()
 
 **FraudShield AI** is an explainable, enterprise-grade real-time fraud detection and analyst investigation platform built for banking and fintech operations.
+
+---
+
+## 🚀 Live Demo & Hack2Ignite Deployment
+
+The platform is **LIVE and publicly accessible**:
+
+| Service | Access Link | Description |
+| :--- | :--- | :--- |
+| **Live Web Application** | **[Open Live App](https://site-griffin-flower-fluid.trycloudflare.com)** | Full React 19 + Tailwind Operations Dashboard |
+| **Interactive API Docs** | **[Open Swagger UI](https://site-griffin-flower-fluid.trycloudflare.com/docs)** | OpenAPI Specification & Live Request Testing |
+| **System Health Check** | **[View Health Endpoint](https://site-griffin-flower-fluid.trycloudflare.com/health)** | PostgreSQL, Engine, & Redis Health Status |
+| **Live WebSocket Stream** | `wss://site-griffin-flower-fluid.trycloudflare.com/ws/alerts` | Real-time Alert & Event Broadcasting |
+
+### 🔐 Demonstration Accounts (Role-Based Access Control)
+
+| Role | Email | Password | Permissions |
+| :--- | :--- | :--- | :--- |
+| **Super Admin** | `admin@shieldbank.com` | `AdminPass123!` | Full read/write, user management, system settings |
+| **Fraud Analyst** | `analyst@shieldbank.com` | `AnalystPass123!` | Investigations, note mutations, verdict submissions |
+| **Risk Manager** | `manager@shieldbank.com` | `ManagerPass123!` | Risk thresholds, model oversight, audit inspections |
+| **Read-Only Viewer** | `viewer@shieldbank.com` | `ViewerPass123!` | Audit view only (mutations strictly blocked by RLS) |
+
+### 🎯 Key Demo Highlights
+
+1. **Hero Takeover Scenario (`tx_hero_takeover_007`):**
+   - High-amount wire transfer ($18,500) initiated from Singapore via a previously unobserved device.
+   - Evaluated to **Risk Score 91/100 (CRITICAL)** with **97.3% supervised fraud probability** and **0.59 anomaly score**.
+2. **Local SHAP Feature Attribution:**
+   - Real-time signed contributions quantifying why a transaction was flagged (`amount` +2.72, `is_new_device` +1.28).
+3. **Forensic Copilot:**
+   - Interactive investigation assistant providing evidence summaries and guided next steps.
+4. **Real-time Event Streaming:**
+   - Low-latency Redis Pub/Sub WebSocket event propagation for instant alert triage.
 
 ---
 

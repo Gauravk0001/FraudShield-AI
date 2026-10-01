@@ -46,6 +46,42 @@ The platform is **LIVE and publicly accessible**:
 
 ---
 
+## 📖 About FraudShield AI
+
+### The Challenge in Modern Financial Crime
+Modern financial institutions and fintech platforms process billions of transactions daily while defending against sophisticated, evolving fraud vectors—such as automated credential-stuffing account takeovers (ATO), rapid velocity laundering, and synthetic identities. Traditional fraud detection approaches suffer from critical operational bottlenecks:
+- **Rigid Rule Engines:** Cause massive alert fatigue with false positive rates often exceeding 85%, alienating legitimate cardholders and overwhelming human triage teams.
+- **Black-Box Deep Learning Models:** Output inscrutable probabilities with zero explanatory evidence, violating global financial regulatory compliance mandates (such as GDPR Article 22, FCRA, and OCC/SR 11-7 model risk management guidance).
+- **Siloed Systems:** Disconnect detection from investigation, forcing analysts to manually correlate telemetry across disconnected log aggregators.
+
+### The FraudShield AI Solution
+**FraudShield AI** solves these systemic challenges by unifying real-time predictive intelligence, deterministic domain rules, unsupervised anomaly detection, and exact mathematical explainability into a singular, high-throughput analyst operations platform:
+
+- **Dual-Model ML Architecture:** Concurrently evaluates incoming transactions through a calibrated supervised **XGBoost Classifier** (Platt-scaled for true posterior probabilities) and an unsupervised **Isolation Forest** (detecting novel, unlabelled zero-day deviations).
+- **Composite Risk Scoring Engine:** Blends 45% supervised risk probability, 35% domain rule & velocity boosts, and 20% anomaly scores into an actionable $0\text{--}100$ score with deterministic thresholds.
+- **Local TreeSHAP Explainability:** Computes exact, mathematically provable feature attribution ($f(x) = \phi_0 + \sum_{i=1}^M \phi_i$) in $<15\text{ms}$, instantly presenting analysts with signed positive/negative risk contributors.
+- **Context-Aware Forensic Copilot:** An intelligent assistant that correlates customer behavioral history, foreign travel deviations, and device telemetry to provide actionable investigative summaries without ever overriding human decision authority.
+- **Enterprise-Grade Multi-Tenancy & Security:** Role-Based Access Control (RBAC), Row-Level Security (RLS) tenant isolation, cryptographic password hashing (Argon2id), and immutable audit logs.
+
+---
+
+## 📦 Releases & Packages
+
+| Artifact | Version | Package Description | Link |
+| :--- | :--- | :--- | :--- |
+| **Official Release** | `v1.0.0` | Hack2Ignite Production Release with complete validated models & docs | [Release v1.0.0](https://github.com/Gauravk0001/FraudShield-AI/releases/tag/v1.0.0) |
+| **Backend Container** | `fraudshield-ai-backend:latest` | Python 3.11 + FastAPI + XGBoost + SHAP + Scikit-Learn | Built via `backend/Dockerfile` |
+| **Frontend Container** | `fraudshield-ai-frontend:latest` | Alpine Nginx + React 19 + TypeScript + Tailwind SPA | Built via `frontend/Dockerfile` |
+| **ML Model Bundle** | `v2.0.0-forensic` | Calibrated XGBoost + Isolation Forest + SHAP artifacts | [`backend/models_artifacts/`](backend/models_artifacts/) |
+
+### Packaged Model Artifacts
+- **`fraud_classifier.joblib`**: Platt-scaled calibrated XGBoost estimator (`CalibratedClassifierCV` over `XGBClassifier`).
+- **`isolation_forest.joblib`**: Unsupervised anomaly detector trained on customer transaction profiles.
+- **`base_xgboost.joblib`**: Native booster for high-speed TreeSHAP feature attribution calculations.
+- **`model_metadata.json`**: Model lineage, feature schemas, training distribution metadata, and performance metrics.
+
+---
+
 ## 🏛️ End-to-End Architecture
 
 ```

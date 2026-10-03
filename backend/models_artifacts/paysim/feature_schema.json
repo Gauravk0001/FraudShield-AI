@@ -1,0 +1,106 @@
+{
+  "schema_version": "2.1.0",
+  "variant": "no_balance",
+  "features_count": 16,
+  "features": [
+    "amount",
+    "log_amount",
+    "type_encoded",
+    "step_hour_of_day",
+    "step_day_of_week",
+    "velocity_origin_1h",
+    "velocity_origin_6h",
+    "velocity_origin_24h",
+    "total_amount_origin_1h",
+    "total_amount_origin_6h",
+    "total_amount_origin_24h",
+    "historical_avg_amount_origin",
+    "amount_deviation_ratio",
+    "is_first_time_destination",
+    "dest_prior_inbound_count",
+    "is_dest_customer_p2p"
+  ],
+  "is_synthetic_shortcut_enabled": false,
+  "metadata": {
+    "amount": {
+      "type": "float",
+      "is_balance_derived": false,
+      "description": "Raw transaction monetary amount"
+    },
+    "log_amount": {
+      "type": "float",
+      "is_balance_derived": false,
+      "description": "log1p(amount) for scale normalization"
+    },
+    "type_encoded": {
+      "type": "int",
+      "is_balance_derived": false,
+      "description": "Ordinal encoding of transaction type (PAYMENT=0, CASH_IN=1, DEBIT=2, CASH_OUT=3, TRANSFER=4)"
+    },
+    "step_hour_of_day": {
+      "type": "int",
+      "is_balance_derived": false,
+      "description": "Simulated step modulo 24 (hourly cycle)"
+    },
+    "step_day_of_week": {
+      "type": "int",
+      "is_balance_derived": false,
+      "description": "(Simulated step // 24) modulo 7 (day cycle)"
+    },
+    "velocity_origin_1h": {
+      "type": "int",
+      "is_balance_derived": false,
+      "description": "Number of transactions by origin account in strictly prior 1 simulated step"
+    },
+    "velocity_origin_6h": {
+      "type": "int",
+      "is_balance_derived": false,
+      "description": "Number of transactions by origin account in strictly prior 6 simulated steps"
+    },
+    "velocity_origin_24h": {
+      "type": "int",
+      "is_balance_derived": false,
+      "description": "Number of transactions by origin account in strictly prior 24 simulated steps"
+    },
+    "total_amount_origin_1h": {
+      "type": "float",
+      "is_balance_derived": false,
+      "description": "Sum of transaction amounts by origin account in strictly prior 1 simulated step"
+    },
+    "total_amount_origin_6h": {
+      "type": "float",
+      "is_balance_derived": false,
+      "description": "Sum of transaction amounts by origin account in strictly prior 6 simulated steps"
+    },
+    "total_amount_origin_24h": {
+      "type": "float",
+      "is_balance_derived": false,
+      "description": "Sum of transaction amounts by origin account in strictly prior 24 simulated steps"
+    },
+    "historical_avg_amount_origin": {
+      "type": "float",
+      "is_balance_derived": false,
+      "description": "Running average transaction amount for origin account prior to current event"
+    },
+    "amount_deviation_ratio": {
+      "type": "float",
+      "is_balance_derived": false,
+      "description": "Ratio of current transaction amount to historical origin average"
+    },
+    "is_first_time_destination": {
+      "type": "float",
+      "is_balance_derived": false,
+      "description": "1.0 if origin has never transacted with destination prior to this event, else 0.0"
+    },
+    "dest_prior_inbound_count": {
+      "type": "int",
+      "is_balance_derived": false,
+      "description": "Number of prior inbound transfers received by destination account"
+    },
+    "is_dest_customer_p2p": {
+      "type": "float",
+      "is_balance_derived": false,
+      "description": "1.0 if destination account starts with 'C' (P2P), 0.0 if starts with 'M' (Merchant)"
+    }
+  }
+}

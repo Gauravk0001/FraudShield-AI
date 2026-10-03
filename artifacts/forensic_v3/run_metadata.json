@@ -1,0 +1,39 @@
+{
+  "run_version": "forensic_v3",
+  "git_commit": "01dedbcf07fa",
+  "dataset_sha256_prefix": "3674b803fe9d",
+  "model_sha256_prefix": "931f1021f3c5",
+  "python_version": "3.13.3 (tags/v3.13.3:6280bb5, Apr  8 2025, 14:47:33) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows 11",
+  "started_at": "2026-09-16T17:31:46.379328+00:00",
+  "random_seeds": [
+    42,
+    123,
+    2024,
+    2025,
+    777
+  ],
+  "packages": {
+    "xgboost": "2.1.0",
+    "scikit-learn": "1.5.2",
+    "shap": "0.52.0",
+    "pandas": "2.2.3",
+    "numpy": "2.1.0",
+    "scipy": "1.14.1",
+    "joblib": "1.4.2",
+    "fastapi": "0.140.7"
+  },
+  "steps_status": {
+    "dataset_integrity": "PASS",
+    "final_test_manifest": "PASS",
+    "risk_engine": "PASS",
+    "calibration": "PASS",
+    "multiseed": "PASS",
+    "counterfactuals": "PASS",
+    "domain_shift": "PASS",
+    "pytest": "PASS"
+  },
+  "completed_at": "2026-09-16T17:33:51.353601+00:00",
+  "overall_status": "PASS",
+  "error_steps": []
+}

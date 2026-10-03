@@ -1,0 +1,31 @@
+services:
+  # FraudShield AI - Unified Production Full-Stack Cloud Deployment (Free Tier)
+  - type: web
+    name: fraudshield-ai
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PROJECT_NAME
+        value: FraudShield AI
+      - key: ENVIRONMENT
+        value: production
+      - key: API_V1_STR
+        value: /api/v1
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 60
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: 7
+      - key: GEMINI_MODEL
+        value: gemini-2.0-flash
+      - key: RISK_THRESHOLD_MEDIUM
+        value: 30
+      - key: RISK_THRESHOLD_HIGH
+        value: 70
+      - key: CORS_ORIGINS
+        value: "https://fraudshield-ai-theta.vercel.app,http://localhost:5173,http://localhost:3000"

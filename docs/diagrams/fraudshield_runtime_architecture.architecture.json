@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "FraudShield AI — Runtime Architecture",
+    "output": "docs/diagrams/fraudshield_runtime_architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "primary-path",
+        "label": "Primary Detection Pipeline",
+        "focus": ["clients", "gateway", "feature_eng", "dual_ml", "risk_engine"],
+        "note": "Follow real-time transaction ingestion through feature extraction and dual ML scoring."
+      },
+      {
+        "id": "cache-and-persistence",
+        "label": "Cache & Persistence Tier",
+        "focus": ["feature_eng", "redis", "postgres", "gateway"],
+        "note": "Sub-millisecond Redis velocity caching backed by PostgreSQL durable records."
+      },
+      {
+        "id": "explain-and-copilot",
+        "label": "Explainability & Copilot",
+        "focus": ["risk_engine", "shap_explainer", "gemini_copilot"],
+        "note": "Mathematical TreeSHAP attribution and Gemini AI investigation assistance."
+      }
+    ]
+  },
+  "components": [
+    { "id": "clients", "type": "external", "label": "Client & Analyst UI", "sublabel": "React 19 / HTTPS & WSS", "pos": [40, 270], "size": [140, 60] },
+    { "id": "gateway", "type": "backend", "label": "FastAPI Gateway", "sublabel": "Ingress Router :8000", "pos": [260, 270], "size": [140, 60], "tag": "Port 8000" },
+    { "id": "auth", "type": "security", "label": "Auth & RBAC Service", "sublabel": "Argon2id + JWT + RLS", "pos": [260, 130], "size": [140, 60], "tag": "Zero-Trust" },
+    { "id": "feature_eng", "type": "backend", "label": "Feature Extractor", "sublabel": "Velocity & Deviation", "pos": [490, 270], "size": [140, 60] },
+    { "id": "redis", "type": "database", "label": "Redis 7 Cache", "sublabel": "In-Memory Store :6379", "pos": [490, 130], "size": [140, 60], "tag": "Hot State" },
+    { "id": "postgres", "type": "database", "label": "PostgreSQL 16", "sublabel": "Primary Store :5432", "pos": [490, 410], "size": [140, 60], "tag": "Source of Truth" },
+    { "id": "dual_ml", "type": "backend", "label": "Dual ML Pipeline", "sublabel": "XGBoost + IsoForest", "pos": [720, 270], "size": [140, 60], "tag": "P(Fraud) & Anomaly" },
+    { "id": "risk_engine", "type": "backend", "label": "Composite Risk Engine", "sublabel": "45% ML + 35% Rules + 20% Iso", "pos": [950, 270], "size": [140, 60], "tag": "Score 0-100" },
+    { "id": "shap_explainer", "type": "backend", "label": "TreeSHAP Explainer", "sublabel": "Local Attribution f(x)", "pos": [950, 410], "size": [140, 60], "tag": "Explainability" },
+    { "id": "gemini_copilot", "type": "external", "label": "Gemini Copilot", "sublabel": "Cloud AI Assistant", "pos": [950, 130], "size": [140, 60], "tag": "LLM Copilot" }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Ingress Clients & Cloud Services", "wraps": ["clients", "gemini_copilot"] },
+    { "kind": "security-group", "label": "API Edge & Access Control Perimeter", "wraps": ["gateway", "auth"] },
+    { "kind": "security-group", "label": "Real-Time Detection & ML Inference Core", "wraps": ["dual_ml", "risk_engine"] },
+    { "kind": "security-group", "label": "State & Persistence Tier", "wraps": ["redis", "postgres"] }
+  ],
+  "connections": [
+    { "id": "conn-client-gw", "from": "clients", "to": "gateway", "label": "HTTPS / WSS", "variant": "emphasis" },
+    { "id": "conn-gw-auth", "from": "gateway", "to": "auth", "label": "Auth & RLS", "variant": "security", "fromSide": "top", "toSide": "bottom" },
+    { "id": "conn-gw-feat", "from": "gateway", "to": "feature_eng", "label": "Tx Payload", "variant": "emphasis" },
+    { "id": "conn-feat-redis", "from": "feature_eng", "to": "redis", "label": "Velocity Lookup", "fromSide": "top", "toSide": "bottom" },
+    { "id": "conn-feat-db", "from": "feature_eng", "to": "postgres", "label": "Cache Miss Query", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelDy": 32 },
+    { "id": "conn-gw-db", "from": "gateway", "to": "postgres", "label": "Persist Decisions", "fromSide": "bottom", "toSide": "left" },
+    { "id": "conn-feat-ml", "from": "feature_eng", "to": "dual_ml", "label": "Inference Vector", "variant": "emphasis" },
+    { "id": "conn-ml-risk", "from": "dual_ml", "to": "risk_engine", "label": "Inference Scores", "variant": "emphasis" },
+    { "id": "conn-risk-shap", "from": "risk_engine", "to": "shap_explainer", "label": "Tree Attribution", "fromSide": "bottom", "toSide": "top", "labelDy": 32 },
+    { "id": "conn-risk-gemini", "from": "risk_engine", "to": "gemini_copilot", "label": "Triage Checklist", "variant": "dashed", "fromSide": "top", "toSide": "bottom" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Primary Detection Pipeline",
+      "items": [
+        "Sub-15ms end-to-end evaluation latency across distributed gateway and ML inference engines",
+        "Calibrated XGBoost (Platt Sigmoid) yields monotonic fraud probabilities P(Fraud | x)",
+        "Isolation Forest detects zero-day attacks without requiring ground-truth labels",
+        "Weighted composite risk engine blends supervised ML (45%), domain rules (35%), and anomaly score (20%)"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Read-Through Cache & State",
+      "items": [
+        "Redis 7 maintains in-memory customer velocity counters and hot transaction windows",
+        "Cache misses seamlessly fall back to PostgreSQL authoritative store",
+        "Zero-trust tenant isolation enforced via organization-scoped Row-Level Security (RLS)"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Explainability & Copilot Assist",
+      "items": [
+        "Exact TreeSHAP local attribution calculates exact feature contributions for every scored transaction",
+        "Gemini Copilot provides automated forensic summaries while keeping humans in the loop"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,262 @@
+{
+  "shap_and_importances": {
+    "feature_importances": [
+      {
+        "Feature": "transaction_type_encoded",
+        "XGBoost_Gain": 0.1015,
+        "Permutation_AUC_Drop": 0.0614,
+        "Mean_Abs_SHAP": 1.4272
+      },
+      {
+        "Feature": "is_new_device",
+        "XGBoost_Gain": 0.2958,
+        "Permutation_AUC_Drop": 0.0383,
+        "Mean_Abs_SHAP": 1.2261
+      },
+      {
+        "Feature": "time_since_last_transaction_seconds",
+        "XGBoost_Gain": 0.1844,
+        "Permutation_AUC_Drop": 0.0603,
+        "Mean_Abs_SHAP": 0.8168
+      },
+      {
+        "Feature": "amount",
+        "XGBoost_Gain": 0.0573,
+        "Permutation_AUC_Drop": 0.0162,
+        "Mean_Abs_SHAP": 0.558
+      },
+      {
+        "Feature": "amount_deviation_ratio",
+        "XGBoost_Gain": 0.0266,
+        "Permutation_AUC_Drop": 0.0006,
+        "Mean_Abs_SHAP": 0.2289
+      },
+      {
+        "Feature": "location_changed",
+        "XGBoost_Gain": 0.066,
+        "Permutation_AUC_Drop": 0.0016,
+        "Mean_Abs_SHAP": 0.199
+      },
+      {
+        "Feature": "transaction_velocity_1h",
+        "XGBoost_Gain": 0.1734,
+        "Permutation_AUC_Drop": 0.0009,
+        "Mean_Abs_SHAP": 0.1936
+      },
+      {
+        "Feature": "avg_amount_customer_30d",
+        "XGBoost_Gain": 0.0329,
+        "Permutation_AUC_Drop": 0.0006,
+        "Mean_Abs_SHAP": 0.1716
+      },
+      {
+        "Feature": "hour_of_day",
+        "XGBoost_Gain": 0.0108,
+        "Permutation_AUC_Drop": 0.0001,
+        "Mean_Abs_SHAP": 0.041
+      },
+      {
+        "Feature": "transaction_velocity_24h",
+        "XGBoost_Gain": 0.0489,
+        "Permutation_AUC_Drop": 0.0,
+        "Mean_Abs_SHAP": 0.0375
+      },
+      {
+        "Feature": "day_of_week",
+        "XGBoost_Gain": 0.0023,
+        "Permutation_AUC_Drop": -0.0,
+        "Mean_Abs_SHAP": 0.0033
+      },
+      {
+        "Feature": "is_new_merchant",
+        "XGBoost_Gain": 0.0,
+        "Permutation_AUC_Drop": 0.0,
+        "Mean_Abs_SHAP": 0.0
+      }
+    ],
+    "shap_base_value": -1.1312236785888672,
+    "max_additivity_error": 3.337860107421875e-06,
+    "additivity_verified": true
+  },
+  "counterfactual_tests": [
+    {
+      "fraud_probability": 0.9522,
+      "anomaly_score": 0.6834,
+      "behavioral_boost": 1.0,
+      "risk_score": 91.52,
+      "top_shap_contributors": [
+        [
+          "amount",
+          1.408
+        ],
+        [
+          "time_since_last_transaction_seconds",
+          1.282
+        ],
+        [
+          "is_new_device",
+          0.601
+        ]
+      ],
+      "perturbation": "BASE_SUSPICIOUS (Hero Attack)"
+    },
+    {
+      "fraud_probability": 0.9685,
+      "anomaly_score": 0.5989,
+      "behavioral_boost": 1.0,
+      "risk_score": 90.56,
+      "top_shap_contributors": [
+        [
+          "time_since_last_transaction_seconds",
+          2.662
+        ],
+        [
+          "is_new_device",
+          0.96
+        ],
+        [
+          "transaction_velocity_1h",
+          0.895
+        ]
+      ],
+      "perturbation": "Perturb: Amount $14,500 -> $45 (Normal)"
+    },
+    {
+      "fraud_probability": 0.954,
+      "anomaly_score": 0.6768,
+      "behavioral_boost": 1.0,
+      "risk_score": 91.47,
+      "top_shap_contributors": [
+        [
+          "time_since_last_transaction_seconds",
+          1.86
+        ],
+        [
+          "amount",
+          1.703
+        ],
+        [
+          "transaction_velocity_1h",
+          0.757
+        ]
+      ],
+      "perturbation": "Perturb: Device New -> Known Device"
+    },
+    {
+      "fraud_probability": 0.9742,
+      "anomaly_score": 0.6747,
+      "behavioral_boost": 1.0,
+      "risk_score": 92.33,
+      "top_shap_contributors": [
+        [
+          "time_since_last_transaction_seconds",
+          2.078
+        ],
+        [
+          "amount",
+          1.547
+        ],
+        [
+          "transaction_velocity_1h",
+          0.624
+        ]
+      ],
+      "perturbation": "Perturb: Location Foreign -> Home Location"
+    },
+    {
+      "fraud_probability": 0.9743,
+      "anomaly_score": 0.6419,
+      "behavioral_boost": 1.0,
+      "risk_score": 91.68,
+      "top_shap_contributors": [
+        [
+          "amount",
+          3.005
+        ],
+        [
+          "is_new_device",
+          1.121
+        ],
+        [
+          "transaction_type_encoded",
+          0.582
+        ]
+      ],
+      "perturbation": "Perturb: Velocity 5 -> 0 (Normal Pace)"
+    },
+    {
+      "fraud_probability": 0.9529,
+      "anomaly_score": 0.6823,
+      "behavioral_boost": 1.0,
+      "risk_score": 91.53,
+      "top_shap_contributors": [
+        [
+          "amount",
+          1.376
+        ],
+        [
+          "time_since_last_transaction_seconds",
+          1.331
+        ],
+        [
+          "is_new_device",
+          0.636
+        ]
+      ],
+      "perturbation": "Perturb: Hour 3 AM -> 2 PM (Normal Day)"
+    },
+    {
+      "fraud_probability": 0.0015,
+      "anomaly_score": 0.3479,
+      "behavioral_boost": 0.0,
+      "risk_score": 7.02,
+      "top_shap_contributors": [
+        [
+          "transaction_velocity_24h",
+          0.023
+        ],
+        [
+          "day_of_week",
+          0.002
+        ],
+        [
+          "is_new_merchant",
+          0.0
+        ]
+      ],
+      "perturbation": "Perturb: All Normal (Benign Tx)"
+    }
+  ],
+  "edge_case_tests": [
+    {
+      "test_case": "Zero Amount ($0.00)",
+      "fraud_probability": 0.0015,
+      "status": "PASS (Valid Bounded Inference)"
+    },
+    {
+      "test_case": "Negative Amount (-$50.00)",
+      "fraud_probability": 0.0015,
+      "status": "PASS (Valid Bounded Inference)"
+    },
+    {
+      "test_case": "Extreme Amount ($1,000,000.00)",
+      "fraud_probability": 0.9311,
+      "status": "PASS (Valid Bounded Inference)"
+    },
+    {
+      "test_case": "New Customer Cold-Start (No Prior History)",
+      "fraud_probability": 0.0066,
+      "status": "PASS (Valid Bounded Inference)"
+    },
+    {
+      "test_case": "Rapid Duplicate Timestamp (t_diff = 0.1s)",
+      "fraud_probability": 0.9762,
+      "status": "PASS (Valid Bounded Inference)"
+    },
+    {
+      "test_case": "Unknown Transaction Type Encoded (99.0)",
+      "fraud_probability": 0.0016,
+      "status": "PASS (Valid Bounded Inference)"
+    }
+  ]
+}

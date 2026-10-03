@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "FraudShield AI System Architecture",
+    "output": "fraudshield-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "realtime-detection",
+        "label": "Real-time Detection Pipeline",
+        "focus": ["analyst_ui", "api_gateway", "feature_eng", "xgb_model", "iforest_model", "risk_engine", "alert_stream"],
+        "note": "Follow incoming transactions through causal features and dual-model inference to alert emission."
+      },
+      {
+        "id": "explainability-investigation",
+        "label": "Explainability & Investigation Triage",
+        "focus": ["risk_engine", "shap_explainer", "alert_stream", "copilot_service", "analyst_ui"],
+        "note": "Inspect mathematical feature attribution (TreeSHAP) and analyst forensic copilot guidance."
+      },
+      {
+        "id": "data-persistence",
+        "label": "Audit Trail & Persistence",
+        "focus": ["api_gateway", "db_store", "risk_engine"],
+        "note": "Immutable audit trails and tenant-isolated relational persistence."
+      }
+    ]
+  },
+  "components": [
+    { "id": "analyst_ui", "type": "frontend", "label": "Analyst Dashboard", "sublabel": "React 19 + Tailwind SPA", "pos": [40, 260], "size": [130, 60] },
+    { "id": "api_gateway", "type": "backend", "label": "FastAPI Gateway", "sublabel": "RBAC & Tenant Isolation", "pos": [220, 260], "size": [130, 60] },
+    { "id": "feature_eng", "type": "backend", "label": "Feature Pipeline", "sublabel": "Causal Feature Engine", "pos": [400, 260], "size": [130, 60] },
+    { "id": "xgb_model", "type": "backend", "label": "XGBoost Classifier", "sublabel": "Platt Sigmoid Calibrated", "pos": [580, 160], "size": [140, 60], "tag": "P(Fraud|x)" },
+    { "id": "iforest_model", "type": "backend", "label": "Isolation Forest", "sublabel": "Zero-Day Anomaly Detector", "pos": [580, 360], "size": [140, 60], "tag": "Anomaly Score" },
+    { "id": "risk_engine", "type": "backend", "label": "Composite Risk Engine", "sublabel": "45% ML + 35% Rules + 20% Iso", "pos": [770, 260], "size": [150, 60] },
+    { "id": "shap_explainer", "type": "backend", "label": "TreeSHAP Explainer", "sublabel": "Local Feature Attribution", "pos": [1020, 160], "size": [140, 60] },
+    { "id": "alert_stream", "type": "messagebus", "label": "Redis & WebSockets", "sublabel": "Real-Time Event Stream", "pos": [1020, 260], "size": [140, 60] },
+    { "id": "copilot_service", "type": "security", "label": "Forensic Copilot", "sublabel": "AI Investigation Assistant", "pos": [1020, 360], "size": [140, 60] },
+    { "id": "db_store", "type": "database", "label": "Database Engine", "sublabel": "PostgreSQL / SQLite", "pos": [400, 440], "size": [130, 60] }
+  ],
+  "boundaries": [
+    { "kind": "security-group", "label": "FraudShield AI Detection Core", "wraps": ["api_gateway", "feature_eng", "xgb_model", "iforest_model", "risk_engine"] },
+    { "kind": "region", "label": "Investigation & Triage Operations", "wraps": ["shap_explainer", "alert_stream", "copilot_service"] }
+  ],
+  "connections": [
+    { "id": "ui-to-gw", "from": "analyst_ui", "to": "api_gateway", "label": "HTTPS/WSS", "variant": "emphasis" },
+    { "id": "gw-to-feat", "from": "api_gateway", "to": "feature_eng", "label": "ingest" },
+    { "id": "feat-to-xgb", "from": "feature_eng", "to": "xgb_model", "label": "features" },
+    { "id": "feat-to-iforest", "from": "feature_eng", "to": "iforest_model", "label": "features" },
+    { "id": "xgb-to-risk", "from": "xgb_model", "to": "risk_engine", "label": "prob" },
+    { "id": "iforest-to-risk", "from": "iforest_model", "to": "risk_engine", "label": "anomaly" },
+    { "id": "risk-to-shap", "from": "risk_engine", "to": "shap_explainer", "label": "explain", "fromSide": "top", "toSide": "left" },
+    { "id": "risk-to-stream", "from": "risk_engine", "to": "alert_stream", "label": "risk >= 30", "variant": "emphasis" },
+    { "id": "risk-to-copilot", "from": "risk_engine", "to": "copilot_service", "label": "evidence", "fromSide": "bottom", "toSide": "left" },
+    { "id": "gw-to-db", "from": "api_gateway", "to": "db_store", "label": "audit log", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Ingestion & Security", "items": ["FastAPI Gateway with Argon2id and JWT authentication", "Row-Level Security (RLS) tenant isolation and immutable audit logs"] },
+    { "dot": "emerald", "title": "Dual-Model ML Pipeline", "items": ["Platt-scaled calibrated XGBoost classifier for monotonic posterior probabilities", "Unsupervised Isolation Forest detecting novel attack patterns", "TreeSHAP computing exact signed feature attributions in <15ms"] },
+    { "dot": "rose", "title": "Operations & Copilot", "items": ["Deterministic composite risk scoring (0-100) with calibrated thresholds", "Real-time Redis Pub/Sub WebSocket event stream for sub-second alert triage", "Context-aware Forensic Copilot accelerating analyst investigation"] }
+  ]
+}

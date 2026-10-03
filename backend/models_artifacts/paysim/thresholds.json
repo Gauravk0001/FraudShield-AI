@@ -1,0 +1,11 @@
+{
+  "step_up_threshold": 0.05,
+  "hold_for_review_threshold": 0.1,
+  "authorized_block_threshold": 0.95,
+  "validation_total_cost_at_threshold": 297338.76,
+  "cost_assumptions": {
+    "false_decline_cost": 5.0,
+    "missed_fraud_fixed_cost": 50.0,
+    "step_up_cost": 1.0
+  }
+}

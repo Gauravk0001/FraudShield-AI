@@ -1,0 +1,55 @@
+{
+  "dataset_version": "v2.0.0-forensic",
+  "generated_at": "2026-09-16T08:56:48.437216+00:00",
+  "random_seed": 42,
+  "sha256_hash": "3674b803fe9d4a126771579119a8d36a324fc457ba7b2b83ba8e99333a341e41",
+  "transactions": 17123,
+  "customers": 600,
+  "merchants": 183,
+  "devices": 1900,
+  "days": 45,
+  "date_range": {
+    "start": "2026-01-01T00:00:21.526595+00:00",
+    "end": "2026-02-14T23:51:54.385461+00:00"
+  },
+  "legitimate_transactions": 16276,
+  "fraudulent_transactions": 847,
+  "fraud_rate_pct": 4.95,
+  "fraud_topologies_counts": {
+    "BOT_VELOCITY_ATTACK": 365,
+    "CARD_TESTING": 237,
+    "ACCOUNT_TAKEOVER": 114,
+    "OFF_HOURS_WIRE": 60,
+    "MERCHANT_ABUSE": 39,
+    "DEVICE_TAKEOVER_STEALTH": 32
+  },
+  "fraud_topologies_percentages": {
+    "BOT_VELOCITY_ATTACK": 43.09,
+    "CARD_TESTING": 27.98,
+    "ACCOUNT_TAKEOVER": 13.46,
+    "OFF_HOURS_WIRE": 7.08,
+    "MERCHANT_ABUSE": 4.6,
+    "DEVICE_TAKEOVER_STEALTH": 3.78
+  },
+  "hard_negatives_counts": {
+    "STANDARD": 11786,
+    "HOLIDAY_BURST": 1321,
+    "TRAVELER_VIP": 1114,
+    "NEW_MERCHANT": 1079,
+    "PHONE_UPGRADE": 976
+  },
+  "feature_names": [
+    "amount",
+    "transaction_type_encoded",
+    "hour_of_day",
+    "day_of_week",
+    "transaction_velocity_1h",
+    "transaction_velocity_24h",
+    "avg_amount_customer_30d",
+    "amount_deviation_ratio",
+    "time_since_last_transaction_seconds",
+    "is_new_device",
+    "is_new_merchant",
+    "location_changed"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "model_version": "paysim-v1-no_balance",
+  "model_type": "Calibrated XGBoost Classifier (Platt Sigmoid)",
+  "training_timestamp": "2026-10-02T23:41:37.376527+00:00",
+  "python_version": "3.14.2",
+  "dependencies": {
+    "xgboost": "3.4.1",
+    "scikit_learn": "3.0.3",
+    "numpy": "2.4.1",
+    "pandas": "3.0.3"
+  },
+  "features_count": 16,
+  "feature_names": [
+    "amount",
+    "log_amount",
+    "type_encoded",
+    "step_hour_of_day",
+    "step_day_of_week",
+    "velocity_origin_1h",
+    "velocity_origin_6h",
+    "velocity_origin_24h",
+    "total_amount_origin_1h",
+    "total_amount_origin_6h",
+    "total_amount_origin_24h",
+    "historical_avg_amount_origin",
+    "amount_deviation_ratio",
+    "is_first_time_destination",
+    "dest_prior_inbound_count",
+    "is_dest_customer_p2p"
+  ],
+  "is_balance_derived_active": false,
+  "split_policy": "Strict 70/15/15 chronological step split",
+  "training_samples": 17388,
+  "validation_samples": 3851,
+  "random_seed": 42
+}

@@ -1,0 +1,45 @@
+{
+  "evaluation_timestamp": "2026-10-02T23:42:11Z",
+  "split_evaluated": "test",
+  "sample_count": 3761,
+  "fraud_prevalence_pct": 0.98,
+  "is_synthetic_dataset": true,
+  "metrics": {
+    "pr_auc": 0.0319,
+    "roc_auc": 0.8063,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1_score": 0.0,
+    "recall_at_1pct_fpr": 0.0541,
+    "recall_at_01pct_fpr": 0.0,
+    "brier_score": 0.0097
+  },
+  "operating_thresholds": {
+    "step_up": 0.05,
+    "hold_for_review": 0.1
+  },
+  "confusion_matrix": [
+    [
+      3724,
+      0
+    ],
+    [
+      37,
+      0
+    ]
+  ],
+  "latency_ms": {
+    "p50": 11.71,
+    "p95": 13.87,
+    "p99": 17.54
+  },
+  "business_cost_usd": 453209.55,
+  "visual_reports": [
+    "reports/paysim/pr_curve.png",
+    "reports/paysim/roc_curve.png",
+    "reports/paysim/confusion_matrix.png",
+    "reports/paysim/feature_importance.png",
+    "reports/paysim/calibration_curve.png",
+    "reports/paysim/shap_summary.png"
+  ]
+}

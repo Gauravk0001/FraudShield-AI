@@ -1,0 +1,30 @@
+{
+  "model_version": "paysim-v1-no_balance",
+  "evaluation_split": "validation_15pct",
+  "pr_auc": 0.0602,
+  "roc_auc": 0.7868,
+  "precision": 1.0,
+  "recall": 0.0192,
+  "f1_score": 0.0377,
+  "brier_score": 0.0132,
+  "confusion_matrix": [
+    [
+      3799,
+      0
+    ],
+    [
+      51,
+      1
+    ]
+  ],
+  "latency_ms": {
+    "p50": 16.47,
+    "p95": 21.06,
+    "p99": 22.2
+  },
+  "operating_thresholds": {
+    "step_up": 0.05,
+    "hold_for_review": 0.1
+  },
+  "expected_business_cost": 297338.76
+}

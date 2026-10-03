@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-10-02T23:41:37.382042+00:00",
+  "model_version": "paysim-v1-no_balance",
+  "hashes": {
+    "fraud_classifier.joblib": "96f679dbe94255382abc2906bbe19066a412c38a42baaf04632c44ffe7d07205",
+    "base_xgboost.joblib": "d291e4e53f7902fef00e864fdaddd8438bd79c9284ff34676fad8a78e622d40e",
+    "isolation_forest.joblib": "d556e4b9b3b7c2f64511f3b96c45ce7bb01dadb32a810794c7954282ab5dc189",
+    "feature_schema.json": "57f6a40cb434924e87caa45d767064681fd64f5b112e58c2866186d9538e6122",
+    "thresholds.json": "b740971210290baf70bc3ad58c28f801de344d704ced529de9703de8ecfd4644",
+    "metrics.json": "8428c545001e4878a17449be5ccd7617006f51689c577ca5271668a52dda9de5",
+    "model_metadata.json": "8a8a1605b177b495305fdd2a3c1c6e568631f4d1fbb8dcedb13b45ed2d6c9dd2"
+  }
+}

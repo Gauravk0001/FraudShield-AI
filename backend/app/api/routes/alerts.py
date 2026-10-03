@@ -10,6 +10,7 @@ from app.models.alert import Alert, AlertStatus
 from app.models.risk import RiskLevel
 from app.services.audit_service import log_audit_event
 from app.realtime.event_processor import publish_event
+from app.services.investigation_service import get_or_create_investigation_for_alert
 
 router = APIRouter()
 
@@ -153,3 +154,33 @@ def label_alert(
 
     return alert
 
+
+from pydantic import BaseModel as _BaseModel
+
+
+class InvestigateResponse(_BaseModel):
+    case_id: str
+    investigation_id: str
+    created: bool
+
+
+@router.post("/{id}/investigate", response_model=InvestigateResponse)
+def investigate_alert(
+    id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.FRAUD_ANALYST, UserRole.RISK_MANAGER]))
+):
+    """
+    POST /api/v1/alerts/{id}/investigate
+    Idempotent: creates or retrieves the investigation for this alert.
+    Returns the case_id for direct navigation to /investigations/{case_id}.
+    Never creates duplicate investigations.
+    """
+    inv, created = get_or_create_investigation_for_alert(
+        db=db, alert_id=id, user=current_user
+    )
+    return InvestigateResponse(
+        case_id=inv.id,
+        investigation_id=inv.id,
+        created=created,
+    )

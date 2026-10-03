@@ -70,8 +70,12 @@ export interface Alert {
   updated_at: string;
 }
 
-export type InvestigationStatus = 'OPEN' | 'IN_REVIEW' | 'RESOLVED';
-export type InvestigationDecision = 'CONFIRMED_FRAUD' | 'FALSE_POSITIVE' | 'SUSPICIOUS_MONITORED' | 'NO_ACTION_REQUIRED';
+export type InvestigationStatus = 'OPEN' | 'IN_REVIEW' | 'ESCALATED' | 'RESOLVED';
+export type InvestigationDecision =
+  | 'CONFIRMED_FRAUD'
+  | 'FALSE_POSITIVE'
+  | 'SUSPICIOUS_MONITORED'
+  | 'NO_ACTION_REQUIRED';
 
 export interface InvestigationNote {
   id: string;
@@ -79,6 +83,32 @@ export interface InvestigationNote {
   author_id: string;
   note_text: string;
   created_at: string;
+}
+
+export interface ReasonCode {
+  code: string;
+  message: string;
+  observed_value?: string | number;
+  baseline_value?: string | number;
+  severity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  source?: 'ML' | 'ANOMALY' | 'BEHAVIORAL_RULE' | 'DEGRADED_FALLBACK';
+  contribution_pct?: number;
+}
+
+export interface ForensicSnapshot {
+  risk_score?: number;
+  severity?: string;
+  amount?: number;
+  reason_codes?: ReasonCode[];
+  snapshot_at?: string;
+  // Fields from scoring API when available
+  fraud_probability?: number;
+  anomaly_score?: number;
+  model_version?: string;
+  active_data_source?: string;
+  degraded?: boolean;
+  decision_threshold?: number;
+  scoring_latency_ms?: number;
 }
 
 export interface Investigation {
@@ -91,11 +121,19 @@ export interface Investigation {
   decision?: InvestigationDecision;
   decision_reason?: string;
   version: number;
+  forensic_snapshot?: ForensicSnapshot;
   created_at: string;
+  updated_at?: string;
   resolved_at?: string;
   notes?: InvestigationNote[];
   alert?: Alert;
   transaction?: Transaction;
+}
+
+export interface InvestigateResponse {
+  case_id: string;
+  investigation_id: string;
+  created: boolean;
 }
 
 export interface DashboardStats {

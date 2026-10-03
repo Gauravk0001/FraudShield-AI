@@ -249,14 +249,12 @@ export const AlertsPage: React.FC = () => {
   const handleEscalate = async (alert: Alert) => {
     setIsActing(true);
     try {
-      await apiRequest('/investigations', {
+      const resp = await apiRequest<{ case_id: string; created: boolean }>(`/alerts/${alert.id}/investigate`, {
         method: 'POST',
-        body: JSON.stringify({ alert_id: alert.id }),
       });
       setTriageAlert(null);
-      setActionSuccess(`Investigation opened for alert ${alert.id.slice(0, 8)}.`);
-      setTimeout(() => setActionSuccess(null), 4000);
-      fetchAlerts();
+      // Navigate directly to the investigation case deep link
+      navigate(`/investigations/${resp.case_id}`);
     } catch (err: any) {
       setError(err.message || 'Failed to open investigation');
     } finally {

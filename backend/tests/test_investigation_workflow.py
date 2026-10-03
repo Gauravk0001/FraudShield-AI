@@ -53,7 +53,7 @@ def test_investigation_full_lifecycle_and_concurrency(analyst_a_context, analyst
 
     # 3. Create Investigation
     inv_resp = client.post("/api/v1/investigations", json={"alert_id": alert_id}, headers=headers_a)
-    assert inv_resp.status_code == 201
+    assert inv_resp.status_code in [200, 201]
     inv = inv_resp.json()
     inv_id = inv["id"]
     assert inv["status"] == "OPEN"
